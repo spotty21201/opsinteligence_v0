@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Ellipsis } from 'lucide-react';
 import { Asset } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { statusTagClasses } from '@/styles/tokens';
@@ -23,7 +23,7 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-slate-500">
-            <tr><th className="pb-2">Name</th><th>Type</th><th>Service Line</th><th>Status</th><th>Availability</th></tr>
+            <tr><th className="pb-2">Name</th><th>Type</th><th>Service Line</th><th>Status</th><th>Availability</th><th className="text-right">Actions</th></tr>
           </thead>
           <tbody>
             {assets.map((asset) => (
@@ -35,6 +35,11 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
                 <td>{asset.service_line}</td>
                 <td><Badge title={statusHelp[asset.status]} className={statusTagClasses[asset.status]}>{asset.status}</Badge></td>
                 <td>{asset.availability_date}</td>
+                <td className="text-right text-slate-400">
+                  <button type="button" aria-label="asset actions" className="rounded-md p-1 hover:bg-slate-100" onClick={(e) => e.stopPropagation()}>
+                    <Ellipsis className="h-4 w-4" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

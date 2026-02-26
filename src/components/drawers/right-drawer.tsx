@@ -175,7 +175,7 @@ export function RightDrawer({
                   <p>ETA {row.eta_estimate} • {row.status}</p>
                 </div>
               ))}
-              <Link className="text-xs font-medium text-orange-600" href={`/projects/${project.id}`}>Open full snapshot page</Link>
+              <Link className="text-xs font-medium text-[color:var(--brand-primary)] underline-offset-2 hover:underline" href={`/projects/${project.id}`}>Open full snapshot page</Link>
             </TabsContent>
             <TabsContent value="logs" className="mt-3 space-y-2">
               <form onSubmit={submitDailyLog} className="space-y-2 rounded-xl border p-3 text-xs">

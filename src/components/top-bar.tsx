@@ -19,6 +19,7 @@ export function TopBar({
   onExport,
   counts,
   exporting,
+  exportDisabled,
 }: {
   filters: FilterState;
   search: string;
@@ -27,6 +28,7 @@ export function TopBar({
   onExport: () => void;
   counts: { assets: number; projects: number };
   exporting?: boolean;
+  exportDisabled?: boolean;
 }) {
   return (
     <div className="space-y-1.5 rounded-2xl border bg-white/95 p-2 shadow-soft">
@@ -66,7 +68,7 @@ export function TopBar({
           <option>Operasi</option>
           <option>Disposal</option>
         </select>
-        <Button variant="outline" onClick={onExport} disabled={exporting}>
+        <Button variant="outline" onClick={onExport} disabled={exporting || exportDisabled} title={exportDisabled ? 'Select a project marker to export' : 'Export selected project PDF'}>
           <Download className="mr-2 h-4 w-4" />{exporting ? 'Exporting...' : 'Export'}
         </Button>
       </div>

@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { BriefcaseBusiness, Factory, ShipWheel, Timer } from 'lucide-react';
 import { TopBar } from '@/components/top-bar';
 import { RightDrawer } from '@/components/drawers/right-drawer';
@@ -43,11 +44,15 @@ export function DashboardCockpit({
   speedProfiles: SpeedProfile[];
 }) {
   const { dispatchPrefill, setDispatchPrefill, drawer, setDrawer } = useUiStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [dispatchOpen, setDispatchOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filters, setFilters] = useState({ region: 'All', serviceLine: 'All', status: 'All', phase: 'All' });
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [liveAssets, setLiveAssets] = useState(assets);
   const [liveProjects, setLiveProjects] = useState(projects);
   const [liveLogs, setLiveLogs] = useState(logs);
@@ -55,9 +60,45 @@ export function DashboardCockpit({
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
+    const q = searchParams.get('q') ?? '';
+    const region = searchParams.get('region') ?? 'All';
+    const serviceLine = searchParams.get('serviceLine') ?? 'All';
+    const status = searchParams.get('status') ?? 'All';
+    const phase = searchParams.get('phase') ?? 'All';
+    const project = searchParams.get('project');
+
+    setSearch(q);
+    setFilters({ region, serviceLine, status, phase });
+    setSelectedProjectId(project);
+    if (project) {
+      setDrawer({ mode: 'project', selectedId: project });
+    }
+    // Initialize from query string once on hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim().toLowerCase()), 250);
     return () => window.clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const setParam = (key: string, value: string) => {
+      if (!value || value === 'All') params.delete(key);
+      else params.set(key, value);
+    };
+
+    setParam('q', search.trim());
+    setParam('region', filters.region);
+    setParam('serviceLine', filters.serviceLine);
+    setParam('status', filters.status);
+    setParam('phase', filters.phase);
+    if (selectedProjectId) params.set('project', selectedProjectId);
+    else params.delete('project');
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }, [search, filters, selectedProjectId, router, pathname]);
 
   useEffect(() => {
     const handleRefresh = async () => {
@@ -101,9 +142,7 @@ export function DashboardCockpit({
   }
 
   async function exportSelectedProject() {
-    const selectedProjectId = drawer.mode === 'project' ? drawer.selectedId : filtered.projects[0]?.id;
     if (!selectedProjectId) {
-      toast('Select a project marker first', 'error');
       return;
     }
 
@@ -119,6 +158,7 @@ export function DashboardCockpit({
       link.click();
       URL.revokeObjectURL(url);
       window.open(`/report/${selectedProjectId}?print=1`, '_blank');
+      window.dispatchEvent(new Event('ops-report-generated'));
       toast('PDF exported', 'success');
     } catch {
       toast('PDF export failed', 'error');
@@ -128,11 +168,17 @@ export function DashboardCockpit({
   }
 
   const noResults = filtered.assets.length === 0 && filtered.projects.length === 0;
+  const filteredAssetIds = new Set(filtered.assets.map((row) => row.id));
+  const filteredProjectIds = new Set(filtered.projects.map((row) => row.id));
   const kpis = [
-    { label: 'Active Assets', value: liveAssets.filter((row) => row.status === 'Working').length, icon: ShipWheel },
-    { label: 'Idle / Standby', value: liveAssets.filter((row) => row.status === 'Idle' || row.status === 'Standby').length, icon: Factory },
-    { label: 'Projects in Operasi', value: liveProjects.filter((row) => row.phase === 'Operasi').length, icon: BriefcaseBusiness },
-    { label: 'Assignments Planned', value: liveAssignments.filter((row) => row.status === 'Planned').length, icon: Timer },
+    { label: 'Active Assets', value: filtered.assets.filter((row) => row.status === 'Working').length, icon: ShipWheel },
+    { label: 'Idle / Standby', value: filtered.assets.filter((row) => row.status === 'Idle' || row.status === 'Standby').length, icon: Factory },
+    { label: 'Projects in Operasi', value: filtered.projects.filter((row) => row.phase === 'Operasi').length, icon: BriefcaseBusiness },
+    {
+      label: 'Assignments Planned',
+      value: liveAssignments.filter((row) => row.status === 'Planned' && filteredProjectIds.has(row.project_id) && filteredAssetIds.has(row.asset_id)).length,
+      icon: Timer,
+    },
   ];
 
   return (
@@ -145,12 +191,13 @@ export function DashboardCockpit({
           onFilter={(key, value) => setFilters((curr) => ({ ...curr, [key]: value }))}
           onExport={exportSelectedProject}
           exporting={exporting}
+          exportDisabled={!selectedProjectId}
           counts={{ assets: filtered.assets.length, projects: filtered.projects.length }}
         />
       </div>
       <div className="absolute left-4 right-[450px] top-[98px] z-20 grid grid-cols-2 gap-2 lg:grid-cols-4">
         {kpis.map((item) => (
-          <div key={item.label} className="rounded-xl border bg-white px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
+          <div key={item.label} className="rounded-xl border bg-[color:var(--brand-soft)]/70 px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
             <div className="flex items-start justify-between">
               <p className="text-[12px] italic text-slate-600">{item.label}</p>
               <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
@@ -161,12 +208,15 @@ export function DashboardCockpit({
       </div>
 
       <div className="h-full w-full pr-[430px]">
-        <ErrorBoundary fallbackTitle="Dashboard map unavailable" fallbackDescription="Map rendering failed. You can still use tables and reports.">
+        <ErrorBoundary fallbackTitle="Map not supported in this environment" fallbackDescription="Map view is unavailable on this browser/device. You can still use tables and reports.">
           <MapClient
             assets={filtered.assets}
             projects={filtered.projects}
             onSelectAsset={(id) => setDrawer({ mode: 'asset', selectedId: id })}
-            onSelectProject={(id) => setDrawer({ mode: 'project', selectedId: id })}
+            onSelectProject={(id) => {
+              setSelectedProjectId(id);
+              setDrawer({ mode: 'project', selectedId: id });
+            }}
           />
         </ErrorBoundary>
       </div>

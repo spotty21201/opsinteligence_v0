@@ -60,6 +60,10 @@ export default function DispatchPage() {
     if (!selectedProject) return [];
     return recommendAssets(selectedProject, assets, speedProfiles);
   }, [selectedProject, assets, speedProfiles]);
+  const selectedRecommendation = useMemo(
+    () => recommendations.find((row) => row.asset.id === form.asset_id) ?? recommendations[0] ?? null,
+    [recommendations, form.asset_id],
+  );
 
   useEffect(() => {
     if (recommendations.length > 0) {
@@ -148,12 +152,12 @@ export default function DispatchPage() {
         <h1 className="text-lg font-semibold">Dispatch Planner</h1>
         <div className="mt-3 space-y-2 text-sm">
           <label className="grid gap-1">Project
-            <select className="h-10 appearance-none rounded-xl border bg-white px-2 text-slate-900" value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })}>
+            <select className="h-10 rounded-xl border bg-white px-2 text-slate-900" value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })}>
               {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
             </select>
           </label>
           <label className="grid gap-1">Asset
-            <select className="h-10 appearance-none rounded-xl border bg-white px-2 text-slate-900" value={form.asset_id} onChange={(e) => setForm({ ...form, asset_id: e.target.value })}>
+            <select className="h-10 rounded-xl border bg-white px-2 text-slate-900" value={form.asset_id} onChange={(e) => setForm({ ...form, asset_id: e.target.value })}>
               {(recommendations.length > 0 ? recommendations.map((rec) => rec.asset) : assets).map((asset) => (
                 <option key={asset.id} value={asset.id}>
                   {asset.name}
@@ -161,16 +165,16 @@ export default function DispatchPage() {
               ))}
             </select>
           </label>
-          {recommendations.length > 0 && (
+          {selectedRecommendation && (
             <div className="rounded-xl border bg-slate-50 p-2 text-xs text-slate-600">
-              Recommended: {recommendations[0].asset.name} — {recommendations[0].explanation}
+              Recommended: {selectedRecommendation.asset.name} — {selectedRecommendation.explanation}
             </div>
           )}
           <label className="grid gap-1">ETA estimate
             <input className="h-10 rounded-xl border bg-white px-2 text-slate-900" type="date" value={form.eta_estimate} onChange={(e) => setForm({ ...form, eta_estimate: e.target.value })} />
           </label>
           <label className="grid gap-1">Checklist JSON
-            <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} />
+            <textarea className="min-h-20 max-h-36 rounded-xl border bg-white p-2 text-slate-900" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} />
           </label>
           <label className="grid gap-1">Risk notes
             <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={form.risk_notes} onChange={(e) => setForm({ ...form, risk_notes: e.target.value })} />
@@ -217,7 +221,7 @@ export default function DispatchPage() {
           <DialogTitle>Edit Assignment</DialogTitle>
           <div className="mt-3 space-y-2 text-sm">
             <label className="grid gap-1">Status
-              <select className="h-10 appearance-none rounded-xl border bg-white px-2 text-slate-900" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>
+              <select className="h-10 rounded-xl border bg-white px-2 text-slate-900" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>
                 <option>Planned</option><option>Active</option><option>Completed</option>
               </select>
             </label>
@@ -225,7 +229,7 @@ export default function DispatchPage() {
               <input className="h-10 rounded-xl border bg-white px-2 text-slate-900" type="date" value={editForm.eta_estimate} onChange={(e) => setEditForm({ ...editForm, eta_estimate: e.target.value })} />
             </label>
             <label className="grid gap-1">Checklist JSON
-              <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={editForm.mobilization_checklist} onChange={(e) => setEditForm({ ...editForm, mobilization_checklist: e.target.value })} />
+              <textarea className="min-h-20 max-h-36 rounded-xl border bg-white p-2 text-slate-900" value={editForm.mobilization_checklist} onChange={(e) => setEditForm({ ...editForm, mobilization_checklist: e.target.value })} />
             </label>
             <label className="grid gap-1">Risk notes
               <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={editForm.risk_notes} onChange={(e) => setEditForm({ ...editForm, risk_notes: e.target.value })} />

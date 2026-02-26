@@ -34,6 +34,12 @@ body {
   font-family: var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
+select,
+option {
+  background: #fff;
+  color: var(--text-primary);
+}
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,

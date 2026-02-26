@@ -72,6 +72,14 @@ create table if not exists speed_profiles (
   speed_km_per_day numeric(8,2) not null
 );
 
+create table if not exists reports (
+  id text primary key,
+  project_id text not null references projects(id) on delete cascade,
+  project_name text not null,
+  created_at timestamptz not null default now(),
+  filename text not null
+);
+
 create index if not exists idx_assets_status on assets(status);
 create index if not exists idx_assets_service_line on assets(service_line);
 create index if not exists idx_projects_phase on projects(phase);
@@ -79,3 +87,4 @@ create index if not exists idx_projects_service_line on projects(service_line);
 create index if not exists idx_assignments_project_id on assignments(project_id);
 create index if not exists idx_assignments_asset_id on assignments(asset_id);
 create index if not exists idx_daily_logs_project_id on daily_logs(project_id);
+create index if not exists idx_reports_project_id on reports(project_id);

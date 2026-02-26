@@ -181,10 +181,28 @@ export async function upsertProject(row: Project) {
 }
 
 export async function listReportMeta() {
+  if (hasSupabase) {
+    const sb = getSupabaseServerClient();
+    try {
+      const { data, error } = await sb!.from('reports').select('*').order('created_at', { ascending: false });
+      if (!error && data) return data as ReportMeta[];
+    } catch {
+      // Fall through to file-backed metadata for demo resilience.
+    }
+  }
   return safeReadReports();
 }
 
 export async function addReportMeta(meta: ReportMeta) {
+  if (hasSupabase) {
+    const sb = getSupabaseServerClient();
+    try {
+      const { error } = await sb!.from('reports').insert(meta);
+      if (!error) return;
+    } catch {
+      // Fall through to file-backed metadata for demo resilience.
+    }
+  }
   const all = await safeReadReports();
   all.unshift(meta);
   await fs.mkdir(path.dirname(reportMetaPath), { recursive: true });

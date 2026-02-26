@@ -35,6 +35,7 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
       link.download = `${projectId}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
+      window.dispatchEvent(new Event('ops-report-generated'));
       toast('Project report generated', 'success');
     } catch {
       toast('Failed to generate report', 'error');

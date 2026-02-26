@@ -1,5 +1,6 @@
 import { listDailyLogs, listProjects } from '@/lib/repository';
 import { PrintRouteShell } from '@/components/routes/report/print-route';
+import Image from 'next/image';
 
 export default async function PrintReportPage({
   params,
@@ -16,11 +17,15 @@ export default async function PrintReportPage({
   const logs = await listDailyLogs(projectId);
 
   const avg = logs.length ? logs.reduce((sum, log) => sum + log.progress_value, 0) / logs.length : 0;
+  const staticMapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${project.lat},${project.lng}&zoom=6&size=520x260&markers=${project.lat},${project.lng},lightblue1`;
 
   return (
     <PrintRouteShell>
     <div className="mx-auto max-w-[900px] bg-white p-8 text-slate-900 print:max-w-none print:p-6">
       <header className="border-b pb-4">
+        <div className="mb-3">
+          <Image src="/brand/trisigma-logo.png" alt="Trisigma logo" width={168} height={34} className="h-8 w-auto" priority />
+        </div>
         <h1 className="text-2xl font-semibold">3Sigma Ops Intelligence — {project.name}</h1>
         <p className="text-xs text-slate-500">Generated {new Date().toLocaleString()}</p>
       </header>
@@ -29,8 +34,8 @@ export default async function PrintReportPage({
         <article className="rounded-xl border bg-slate-50 p-4">
           <p className="text-xs text-slate-500">Map thumbnail</p>
           <div className="mt-2 rounded-xl border bg-white p-4 text-sm">
-            Indonesia mini-map placeholder
-            <p className="text-xs text-slate-500">Lat/Lng {project.lat}, {project.lng}</p>
+            <img src={staticMapUrl} alt={`Project map for ${project.name}`} className="h-auto w-full rounded-lg border object-cover" />
+            <p className="mt-2 text-xs text-slate-500">Lat/Lng {project.lat}, {project.lng}</p>
           </div>
         </article>
         <article className="rounded-xl border p-4 text-sm">
@@ -47,8 +52,13 @@ export default async function PrintReportPage({
         <table className="w-full text-xs">
           <thead><tr className="text-left text-slate-500"><th>Date</th><th>Hours</th><th>Progress</th><th>Downtime Tags</th></tr></thead>
           <tbody>
-            {logs.slice(0, 12).map((log) => (
-              <tr key={log.id} className="border-t"><td className="py-1">{log.date}</td><td>{log.hours_worked}</td><td>{log.progress_value} {log.progress_unit}</td><td>{log.downtime_tags.join(', ') || '-'}</td></tr>
+            {logs.slice(0, 12).map((log, index) => (
+              <tr key={log.id} className={`border-t ${index % 2 === 1 ? 'bg-slate-50/70' : ''}`}>
+                <td className="py-1">{log.date}</td>
+                <td className="text-right">{log.hours_worked}</td>
+                <td className="text-right">{log.progress_value} {log.progress_unit}</td>
+                <td>{log.downtime_tags.join(', ') || '-'}</td>
+              </tr>
             ))}
           </tbody>
         </table>

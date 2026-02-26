@@ -43,7 +43,7 @@ export function Map({
     const canvas = document.createElement('canvas');
     const hasWebgl = Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || canvas.getContext('webgl2'));
     if (!hasWebgl) {
-      setLoadError('Map unavailable on this browser/device');
+      setLoadError('Map not supported in this environment');
       return;
     }
     const styleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
@@ -75,7 +75,7 @@ export function Map({
       });
     });
     map.on('error', () => {
-      setLoadError('Map tiles failed to load');
+      setLoadError('Map not supported in this environment');
     });
 
     mapRef.current = map;

@@ -64,6 +64,9 @@ export function DispatchModal({
     }
     toast('Assignment created', 'success');
     await onCreated?.();
+    setEta('');
+    setChecklist('[{"item":"Crew manifest","done":false}]');
+    setRiskNotes('');
     onOpenChange(false);
   }
 
@@ -73,12 +76,12 @@ export function DispatchModal({
         <DialogTitle className="text-base font-semibold">Create Assignment</DialogTitle>
         <div className="mt-4 grid gap-3">
           <label className="grid gap-1 text-sm">Project
-            <select className="h-10 rounded-xl border px-2" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+            <select className="h-10 rounded-xl border bg-white px-2 text-slate-900" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
               {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
             </select>
           </label>
           <label className="grid gap-1 text-sm">Asset
-            <select className="h-10 rounded-xl border px-2" value={assetId} onChange={(e) => setAssetId(e.target.value)}>
+            <select className="h-10 rounded-xl border bg-white px-2 text-slate-900" value={assetId} onChange={(e) => setAssetId(e.target.value)}>
               {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
             </select>
           </label>
@@ -86,10 +89,10 @@ export function DispatchModal({
             <Input type="date" value={eta} onChange={(e) => setEta(e.target.value)} />
           </label>
           <label className="grid gap-1 text-sm">Checklist JSON
-            <textarea className="min-h-20 rounded-xl border p-2 text-sm" value={checklist} onChange={(e) => setChecklist(e.target.value)} />
+            <textarea className="min-h-20 max-h-36 rounded-xl border bg-white p-2 text-sm text-slate-900" value={checklist} onChange={(e) => setChecklist(e.target.value)} />
           </label>
           <label className="grid gap-1 text-sm">Risk notes
-            <textarea className="min-h-20 rounded-xl border p-2 text-sm" value={riskNotes} onChange={(e) => setRiskNotes(e.target.value)} />
+            <textarea className="min-h-20 max-h-36 rounded-xl border bg-white p-2 text-sm text-slate-900" value={riskNotes} onChange={(e) => setRiskNotes(e.target.value)} />
           </label>
           <Button onClick={submit}>Save Assignment</Button>
         </div>
