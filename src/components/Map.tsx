@@ -151,6 +151,24 @@ export function Map({
     const map = mapRef.current;
     if (!map) return;
 
+    const handleResize = () => {
+      map.resize();
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('app-shell-resize', handleResize as EventListener);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('app-shell-resize', handleResize as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
     const source = map.getSource('project-polygons') as GeoJSONSource | undefined;
     if (source) source.setData(polygonSource);
   }, [polygonSource]);
@@ -240,9 +258,9 @@ export function Map({
   return (
     <div className="relative h-full min-h-[620px] w-full">
       <div ref={containerRef} className="h-full min-h-[620px] w-full" />
-      <div className="absolute bottom-3 right-3 z-20 flex flex-col items-end gap-2">
+      <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-col items-end gap-2 sm:left-auto sm:w-auto">
         {legendOpen ? (
-          <div className="max-h-72 w-60 overflow-y-auto rounded-xl border bg-white/90 p-3 text-xs shadow-soft backdrop-blur">
+          <div className="max-h-[65vh] w-full overflow-y-auto rounded-xl border bg-white/95 p-3 text-xs shadow-soft backdrop-blur sm:max-h-72 sm:w-60 sm:bg-white/90">
             <p className="mb-2 font-semibold text-slate-700">Map Legend</p>
             <div className="space-y-1.5 text-slate-600">
               <p className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded-full border-2 border-[#1D498B] bg-white" /><span>Asset marker (circle)</span></p>
@@ -261,7 +279,7 @@ export function Map({
             </div>
           </div>
         ) : null}
-        <div className="grid grid-cols-3 gap-1 rounded-xl border bg-white/90 p-1 shadow-soft backdrop-blur">
+        <div className="grid w-full grid-cols-3 gap-1 rounded-xl border bg-white/90 p-1 shadow-soft backdrop-blur sm:w-auto">
           <button
             type="button"
             onClick={() => setLegendOpen((curr) => !curr)}

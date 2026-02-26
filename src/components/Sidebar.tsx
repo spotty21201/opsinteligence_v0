@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ClipboardList, FileText, LayoutDashboard, Menu, Settings, Ship, Workflow, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TrisigmaLogo } from '@/components/brand/trisigma-logo';
@@ -46,15 +46,19 @@ export function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    window.dispatchEvent(new Event('app-shell-resize'));
+  }, [open]);
+
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-white px-4 md:hidden">
+      <header className="fixed left-0 right-0 top-0 z-40 grid h-14 grid-cols-3 items-center border-b bg-white px-3 sm:hidden">
         <button onClick={() => setOpen(true)} className="rounded-lg border p-2"><Menu className="h-4 w-4" /></button>
-        <p className="text-sm font-semibold">3Sigma Ops Intelligence</p>
-        <span className="w-8" />
+        <p className="text-center text-sm font-semibold">3Sigma Ops Intelligence</p>
+        <span />
       </header>
 
-      <aside className="hidden h-screen w-64 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4 md:block">
+      <aside className="hidden h-screen w-64 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4 sm:block">
         <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
           <TrisigmaLogo />
           <div className="mt-2 text-[23px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
@@ -72,7 +76,7 @@ export function Sidebar() {
       </aside>
 
       {open && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 sm:hidden">
           <button className="absolute inset-0 bg-slate-900/30" onClick={() => setOpen(false)} aria-label="close navigation" />
           <aside className="relative z-10 h-full w-72 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4">
             <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">

@@ -182,11 +182,11 @@ export function DashboardCockpit({
   ];
 
   return (
-    <div className="relative h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border bg-white">
-      <div className="absolute left-4 right-[450px] top-3 z-20">
-        <h1 className="text-base font-semibold text-slate-800">National Operations Map</h1>
-        <p className="text-xs text-slate-500">Assets and projects across Indonesia.</p>
-        <div className="mt-2">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden rounded-2xl border bg-white sm:block sm:h-[calc(100vh-2rem)]">
+      <div className="z-20 shrink-0 px-3 pt-3 sm:absolute sm:left-4 sm:right-[450px] sm:top-3 sm:px-0 sm:pt-0">
+        <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl">National Operations Map</h1>
+        <p className="text-sm text-slate-500 sm:text-base">Assets and projects across Indonesia.</p>
+        <div className="mt-2 sm:mt-2">
           <TopBar
             filters={filters}
             search={search}
@@ -200,11 +200,11 @@ export function DashboardCockpit({
         </div>
         <div className="mt-4 flex items-center justify-between px-1">
           <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Today&apos;s snapshot</p>
-          <p className="text-[11px] text-slate-500">Tip: Click a marker to view details and dispatch.</p>
+          <p className="hidden text-[11px] text-slate-500 sm:block">Tip: Click a marker to view details and dispatch.</p>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {kpis.map((item) => (
-            <div key={item.label} className="rounded-xl border bg-[color:var(--brand-soft)]/70 px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
+            <div key={item.label} className="rounded-xl border bg-[color:var(--brand-soft)]/70 p-3 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)] sm:p-4">
               <div className="flex items-start justify-between">
                 <p className="text-[12px] text-slate-500">{item.label}</p>
                 <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
@@ -215,7 +215,7 @@ export function DashboardCockpit({
         </div>
       </div>
 
-      <div className="h-full w-full pr-[430px] shadow-[inset_0_0_0_1px_rgba(29,73,139,0.06),inset_0_12px_28px_rgba(2,6,23,0.06)]">
+      <div className="relative flex-1 min-h-[420px] w-full shadow-[inset_0_0_0_1px_rgba(29,73,139,0.06),inset_0_12px_28px_rgba(2,6,23,0.06)] sm:h-full sm:pr-[430px]">
         <ErrorBoundary fallbackTitle="Map not supported in this environment" fallbackDescription="Map view is unavailable on this browser/device. You can still use tables and reports.">
           <MapClient
             assets={filtered.assets}
@@ -230,7 +230,7 @@ export function DashboardCockpit({
       </div>
 
       {noResults && (
-        <div className="absolute inset-x-8 top-[296px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
+        <div className="absolute inset-x-3 top-[470px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft sm:inset-x-8 sm:top-[296px]">
           No map results found for current search and filters.
         </div>
       )}

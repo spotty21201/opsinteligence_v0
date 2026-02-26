@@ -88,7 +88,7 @@ export function RightDrawer({
   }
 
   return (
-    <aside className={cn('absolute right-0 top-0 z-30 h-full w-[430px] border-l bg-white transition-transform duration-200', drawer.mode === 'closed' ? 'translate-x-full' : 'translate-x-0')}>
+    <aside className={cn('absolute right-0 top-0 z-30 h-full w-full border-l bg-white transition-transform duration-200 sm:w-[430px]', drawer.mode === 'closed' ? 'translate-x-full' : 'translate-x-0')}>
       <div className="flex items-center justify-between border-b p-4">
         <p className="text-sm font-semibold">Context Drawer</p>
         <button className="rounded-md p-1 text-slate-500 hover:bg-slate-100" onClick={closeDrawer}><X className="h-4 w-4" /></button>
