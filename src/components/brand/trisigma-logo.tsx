@@ -7,9 +7,9 @@ export function TrisigmaLogo({ className = '' }: { className?: string }) {
     <Image
       src="/brand/trisigma-logo.png"
       alt="Trisigma Logo"
-      width={150}
+      width={170}
       height={34}
-      className={`h-8 w-auto object-contain ${className}`}
+      className={`mt-1 h-[34px] w-auto max-w-[170px] object-contain ${className}`}
       priority
     />
   );

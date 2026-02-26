@@ -55,12 +55,17 @@ export function Sidebar() {
       </header>
 
       <aside className="hidden h-screen w-64 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4 md:block">
-        <div className="rounded-2xl border bg-white px-4 py-4 shadow-soft">
+        <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
           <TrisigmaLogo />
-          <p className="mt-2 text-[23px] font-bold tracking-[-0.01em] text-slate-900">3Sigma Ops Intelligence</p>
-          <p className="mt-1 font-serif text-[14px] italic text-slate-800">See the fleet. Plan mobilization.</p>
-          <div className="mt-3 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
-          <span className="mt-3 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium text-slate-500">Release 0.0 Demo</span>
+          <div className="mt-2 text-[23px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+            3Sigma Ops
+            <br />
+            Intelligence
+          </div>
+          <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span> for Trisigma.</p>
+          <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
+          <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
+          <span className="mt-4 inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">Release 0.0 Demo</span>
         </div>
         <NavItems pathname={pathname} />
         <p className="absolute bottom-4 w-[220px] text-[11px] text-slate-500">Built by Kolabs.Design <span className="text-[color:var(--accent-orange)]">•</span> AIM+HDA Collective</p>
@@ -70,17 +75,22 @@ export function Sidebar() {
         <div className="fixed inset-0 z-50 md:hidden">
           <button className="absolute inset-0 bg-slate-900/30" onClick={() => setOpen(false)} aria-label="close navigation" />
           <aside className="relative z-10 h-full w-72 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4">
-            <div className="rounded-2xl border bg-white px-4 py-4 shadow-soft">
+            <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
               <div className="flex items-start justify-between">
                 <div>
                   <TrisigmaLogo />
-                  <p className="mt-2 text-[22px] font-bold tracking-[-0.01em] text-slate-900">3Sigma Ops Intelligence</p>
-                  <p className="mt-1 font-serif text-[14px] italic text-slate-800">See the fleet. Plan mobilization.</p>
+                  <div className="mt-2 text-[22px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+                    3Sigma Ops
+                    <br />
+                    Intelligence
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span> for Trisigma.</p>
+                  <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg border p-1"><X className="h-4 w-4" /></button>
               </div>
-              <div className="mt-3 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
-              <span className="mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium text-slate-500">Release 0.0 Demo</span>
+              <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
+              <span className="mt-4 inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">Release 0.0 Demo</span>
             </div>
             <NavItems pathname={pathname} onNavigate={() => setOpen(false)} />
           </aside>
