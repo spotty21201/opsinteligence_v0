@@ -31,7 +31,7 @@ export function TopBar({
   exportDisabled?: boolean;
 }) {
   return (
-    <div className="space-y-1.5 rounded-2xl border bg-white/95 p-2 shadow-soft">
+    <div className="min-h-[140px] rounded-2xl border bg-white/90 p-2 shadow-soft">
       <div className="flex items-center gap-2">
         <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -119,8 +119,9 @@ export function TopBar({
           <Download className="mr-2 h-4 w-4" />{exporting ? 'Exporting...' : 'Export'}
         </Button>
       </div>
-      <p className="px-1 text-[11px] text-slate-500">Filter by region, service line, status, phase. Showing <span className="font-semibold text-slate-700">{counts.assets}</span> assets and <span className="font-semibold text-slate-700">{counts.projects}</span> projects.</p>
-      <p className="px-1 text-[11px] text-slate-500">Click a marker to view details and dispatch.</p>
+      <div className="mt-2 flex flex-col gap-1 px-1 leading-relaxed">
+        <p className="text-[11px] text-slate-500">Filter by region, service line, status, phase. Showing <span className="font-semibold text-slate-700">{counts.assets}</span> assets and <span className="font-semibold text-slate-700">{counts.projects}</span> projects.</p>
+      </div>
     </div>
   );
 }
