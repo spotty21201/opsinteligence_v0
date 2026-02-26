@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { useToast } from '@/components/ui/toast-provider';
@@ -52,16 +53,21 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
           </thead>
           <tbody>
             {projects.map((project) => (
-              <tr key={project.id} className="cursor-pointer border-t transition-colors hover:bg-slate-50" onClick={() => router.push(`/projects/${project.id}`)}>
-                <td className="py-2"><Link className="text-orange-600" href={`/projects/${project.id}`} onClick={(e) => e.stopPropagation()}>{project.name}</Link></td>
+              <tr key={project.id} className="group cursor-pointer border-t transition-colors hover:bg-slate-50" onClick={() => router.push(`/projects/${project.id}`)}>
+                <td className="py-1.5">
+                  <Link className="inline-flex items-center gap-1 text-slate-800" href={`/projects/${project.id}`} onClick={(e) => e.stopPropagation()}>
+                    {project.name}
+                    <ChevronRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-70" />
+                  </Link>
+                </td>
                 <td>{project.service_line}</td>
                 <td><Badge title={phaseHelp[project.phase]} className={statusTagClasses[project.phase]}>{project.phase}</Badge></td>
                 <td>{project.priority}</td>
-                <td><Link className="text-orange-600" href={`/projects/${project.id}`} onClick={(e) => e.stopPropagation()}>Open</Link></td>
+                <td><Link className="text-slate-700 underline-offset-2 hover:underline" href={`/projects/${project.id}`} onClick={(e) => e.stopPropagation()}>View</Link></td>
                 <td>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); void generate(project.id); }} className="inline-flex items-center gap-2 text-orange-600">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); void generate(project.id); }} className="inline-flex items-center gap-2 text-slate-700 underline-offset-2 hover:underline">
                     {loadingId === project.id ? <Spinner /> : null}
-                    Generate
+                    Export
                   </button>
                 </td>
               </tr>

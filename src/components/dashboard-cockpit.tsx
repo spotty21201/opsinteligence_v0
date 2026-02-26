@@ -127,6 +127,12 @@ export function DashboardCockpit({
   }
 
   const noResults = filtered.assets.length === 0 && filtered.projects.length === 0;
+  const kpis = [
+    { label: 'Active Assets', value: liveAssets.filter((row) => row.status === 'Working').length },
+    { label: 'Idle / Standby', value: liveAssets.filter((row) => row.status === 'Idle' || row.status === 'Standby').length },
+    { label: 'Projects in Operasi', value: liveProjects.filter((row) => row.phase === 'Operasi').length },
+    { label: 'Assignments Planned', value: liveAssignments.filter((row) => row.status === 'Planned').length },
+  ];
 
   return (
     <div className="relative h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border bg-white">
@@ -141,6 +147,14 @@ export function DashboardCockpit({
           counts={{ assets: filtered.assets.length, projects: filtered.projects.length }}
         />
       </div>
+      <div className="absolute left-4 right-[450px] top-[98px] z-20 grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {kpis.map((item) => (
+          <div key={item.label} className="rounded-xl border bg-white px-3 py-2 shadow-soft">
+            <p className="text-[11px] text-slate-500">{item.label}</p>
+            <p className="text-xl font-semibold text-slate-900">{item.value}</p>
+          </div>
+        ))}
+      </div>
 
       <div className="h-full w-full pr-[430px]">
         <ErrorBoundary fallbackTitle="Dashboard map unavailable" fallbackDescription="Map rendering failed. You can still use tables and reports.">
@@ -154,7 +168,7 @@ export function DashboardCockpit({
       </div>
 
       {noResults && (
-        <div className="absolute inset-x-8 top-28 z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
+        <div className="absolute inset-x-8 top-[186px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
           No map results found for current search and filters.
         </div>
       )}

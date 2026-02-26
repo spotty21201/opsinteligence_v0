@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { ChevronRight } from 'lucide-react';
 import { Asset } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { statusTagClasses } from '@/styles/tokens';
@@ -26,8 +27,10 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
           </thead>
           <tbody>
             {assets.map((asset) => (
-              <tr key={asset.id} className="cursor-pointer border-t transition-colors hover:bg-slate-50" onClick={() => router.push(`/assets/${asset.id}`)}>
-                <td className="py-2 font-medium text-orange-600">{asset.name}</td>
+              <tr key={asset.id} className="group cursor-pointer border-t transition-colors hover:bg-slate-50" onClick={() => router.push(`/assets/${asset.id}`)}>
+                <td className="py-1.5 font-medium text-slate-800">
+                  <span className="inline-flex items-center gap-1">{asset.name}<ChevronRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-70" /></span>
+                </td>
                 <td>{asset.type}</td>
                 <td>{asset.service_line}</td>
                 <td><Badge title={statusHelp[asset.status]} className={statusTagClasses[asset.status]}>{asset.status}</Badge></td>

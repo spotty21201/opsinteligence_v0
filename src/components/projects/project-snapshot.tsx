@@ -35,7 +35,7 @@ export function ProjectSnapshot({
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <p className="text-xs text-slate-500">Phase timeline</p>
+        <p className="text-xs italic text-slate-600" style={{ fontFamily: 'var(--font-serif)' }}>Phase timeline</p>
         <div className="mt-3 grid grid-cols-3 gap-2 lg:grid-cols-6">
           {PROJECT_PHASES.map((phase) => (
             <div key={phase} className="rounded-xl border bg-slate-50 p-2 text-xs">

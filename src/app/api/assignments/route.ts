@@ -7,7 +7,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+  }
+  if (!body?.project_id || !body?.asset_id || !body?.eta_estimate) {
+    return NextResponse.json({ error: 'project_id, asset_id, eta_estimate are required' }, { status: 400 });
+  }
   const row = await createAssignment({
     project_id: body.project_id,
     asset_id: body.asset_id,
@@ -22,7 +30,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = await request.json();
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+  }
   if (!body.id) {
     return NextResponse.json({ error: 'Missing assignment id' }, { status: 400 });
   }
