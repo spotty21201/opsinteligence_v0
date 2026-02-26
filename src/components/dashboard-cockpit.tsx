@@ -58,6 +58,7 @@ export function DashboardCockpit({
   const [liveLogs, setLiveLogs] = useState(logs);
   const [liveAssignments, setLiveAssignments] = useState(assignments);
   const [exporting, setExporting] = useState(false);
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
     const q = searchParams.get('q') ?? '';
@@ -183,7 +184,11 @@ export function DashboardCockpit({
 
   return (
     <div className="relative h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border bg-white">
-      <div className="absolute left-4 right-[450px] top-4 z-20">
+      <div className="absolute left-4 right-[450px] top-3 z-20">
+        <h1 className="text-base font-semibold text-slate-800">National Operations Map</h1>
+        <p className="text-xs text-slate-500">Assets and projects across Indonesia.</p>
+      </div>
+      <div className="absolute left-4 right-[450px] top-[52px] z-20">
         <TopBar
           filters={filters}
           search={search}
@@ -195,19 +200,22 @@ export function DashboardCockpit({
           counts={{ assets: filtered.assets.length, projects: filtered.projects.length }}
         />
       </div>
-      <div className="absolute left-4 right-[450px] top-[98px] z-20 grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <div className="absolute left-4 right-[450px] top-[140px] z-20">
+        <p className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">Today&apos;s snapshot</p>
+      </div>
+      <div className="absolute left-4 right-[450px] top-[164px] z-20 grid grid-cols-2 gap-2 lg:grid-cols-4">
         {kpis.map((item) => (
           <div key={item.label} className="rounded-xl border bg-[color:var(--brand-soft)]/70 px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
             <div className="flex items-start justify-between">
-              <p className="text-[12px] italic text-slate-600">{item.label}</p>
+              <p className="text-[12px] text-slate-500">{item.label}</p>
               <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
             </div>
-            <p className="text-[26px] font-semibold leading-tight text-slate-900">{item.value}</p>
+            <p className="text-3xl font-semibold leading-tight text-slate-900">{item.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="h-full w-full pr-[430px]">
+      <div className="h-full w-full pr-[430px] shadow-[inset_0_0_0_1px_rgba(29,73,139,0.06),inset_0_12px_28px_rgba(2,6,23,0.06)]">
         <ErrorBoundary fallbackTitle="Map not supported in this environment" fallbackDescription="Map view is unavailable on this browser/device. You can still use tables and reports.">
           <MapClient
             assets={filtered.assets}
@@ -222,10 +230,18 @@ export function DashboardCockpit({
       </div>
 
       {noResults && (
-        <div className="absolute inset-x-8 top-[186px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
+        <div className="absolute inset-x-8 top-[254px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
           No map results found for current search and filters.
         </div>
       )}
+      {showHint ? (
+        <div className="absolute bottom-4 left-4 z-20 rounded-xl border bg-white/95 px-3 py-2 text-xs text-slate-600 shadow-soft backdrop-blur">
+          <div className="flex items-center gap-2">
+            <span>Tip: Click a marker to open details.</span>
+            <button type="button" className="rounded px-1 text-slate-500 hover:bg-slate-100" onClick={() => setShowHint(false)}>Dismiss</button>
+          </div>
+        </div>
+      ) : null}
 
       <RightDrawer
         assets={liveAssets}

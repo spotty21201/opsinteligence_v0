@@ -57,6 +57,10 @@ textarea:focus-visible {
   border-radius: 12px;
 }
 
+.maplibregl-canvas {
+  filter: saturate(0.88) contrast(0.98);
+}
+
 @media print {
   body {
     background: #fff;

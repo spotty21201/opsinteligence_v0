@@ -5,6 +5,11 @@ import maplibregl, { GeoJSONSource, Map as MapLibreMap, Marker } from 'maplibre-
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Asset, Project } from '@/lib/types';
 import { designTokens } from '@/styles/tokens';
+import { PROJECT_PHASES } from '@/lib/constants';
+
+const DEFAULT_CENTER: [number, number] = [117.5, -2.2];
+const DEFAULT_ZOOM = 4.2;
+const STATUS_LABELS = ['Working', 'Mobilizing', 'Idle', 'Standby', 'Maintenance', 'Survey'] as const;
 
 export function Map({
   assets,
@@ -22,6 +27,7 @@ export function Map({
   const mapRef = useRef<MapLibreMap | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const autoFitDone = useRef(false);
 
   const polygonSource = useMemo(
     () => ({
@@ -51,12 +57,12 @@ export function Map({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: styleUrl,
-      center: [117.5, -2.2],
-      zoom: 4.2,
+      center: DEFAULT_CENTER,
+      zoom: DEFAULT_ZOOM,
       attributionControl: {},
     });
 
-    map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+    map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
 
     map.on('load', () => {
       map.addSource('project-polygons', {
@@ -136,7 +142,37 @@ export function Map({
       const marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([asset.lng, asset.lat]).addTo(map);
       markersRef.current.push(marker);
     }
+
+    if (!autoFitDone.current && (assets.length > 0 || projects.length > 0)) {
+      autoFitDone.current = true;
+      fitToItems();
+    }
   }, [assets, onSelectAsset, onSelectProject, projects]);
+
+  function resetView() {
+    const map = mapRef.current;
+    if (!map) return;
+    map.easeTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM, duration: 550 });
+  }
+
+  function fitToItems() {
+    const map = mapRef.current;
+    if (!map) return;
+    const points = [...assets.map((row) => [row.lng, row.lat] as [number, number]), ...projects.map((row) => [row.lng, row.lat] as [number, number])];
+    if (points.length === 0) {
+      resetView();
+      return;
+    }
+    if (points.length === 1) {
+      map.easeTo({ center: points[0], zoom: 8, duration: 500 });
+      return;
+    }
+    const bounds = points.reduce(
+      (acc, point) => acc.extend(point),
+      new maplibregl.LngLatBounds(points[0], points[0]),
+    );
+    map.fitBounds(bounds, { padding: 72, duration: 650, maxZoom: 8 });
+  }
 
   if (loadError) {
     return (
@@ -149,29 +185,50 @@ export function Map({
   return (
     <div className="relative h-full min-h-[620px] w-full">
       <div ref={containerRef} className="h-full min-h-[620px] w-full" />
-      <div className="absolute right-3 top-3 z-10">
-        <button
-          type="button"
-          onClick={() => setLegendOpen((curr) => !curr)}
-          className="rounded-lg border bg-white px-2 py-1 text-xs text-slate-700 shadow-sm"
-        >
-          {legendOpen ? 'Hide legend' : 'Show legend'}
-        </button>
+      <div className="absolute bottom-3 right-3 z-20 flex flex-col items-end gap-2">
         {legendOpen ? (
-          <div className="mt-2 w-52 rounded-xl border bg-white p-3 text-xs shadow-soft">
+          <div className="max-h-72 w-60 overflow-y-auto rounded-xl border bg-white/90 p-3 text-xs shadow-soft backdrop-blur">
             <p className="mb-2 font-semibold text-slate-700">Map Legend</p>
             <div className="space-y-1.5 text-slate-600">
               <p className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded-full border-2 border-[#1D498B] bg-white" /><span>Asset marker (circle)</span></p>
               <p className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded-[2px] border-2 border-[#1D498B] bg-white" /><span>Project marker (square)</span></p>
               <p className="mt-2 font-medium">Status colors</p>
-              <p className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 rounded-full bg-[#16A34A]" />Working</p>
-              <p className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2563EB]" />Mobilizing</p>
-              <p className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />Idle / Standby</p>
-              <p className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 rounded-full bg-[#DC2626]" />Maintenance</p>
-              <p className="flex items-center gap-2"><span className="inline-block h-2.5 w-2.5 rounded-full bg-[#7C3AED]" />Survey</p>
+              {STATUS_LABELS.map((status) => (
+                <p key={status} className="flex items-center gap-2">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: designTokens.status[status] }} />
+                  {status}
+                </p>
+              ))}
+              <p className="mt-2 font-medium">Project phases</p>
+              {PROJECT_PHASES.map((phase) => (
+                <p key={phase}>{phase}</p>
+              ))}
             </div>
           </div>
         ) : null}
+        <div className="grid grid-cols-3 gap-1 rounded-xl border bg-white/90 p-1 shadow-soft backdrop-blur">
+          <button
+            type="button"
+            onClick={() => setLegendOpen((curr) => !curr)}
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            Legend
+          </button>
+          <button
+            type="button"
+            onClick={resetView}
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            Reset view
+          </button>
+          <button
+            type="button"
+            onClick={fitToItems}
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            Fit to assets
+          </button>
+        </div>
       </div>
     </div>
   );
