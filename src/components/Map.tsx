@@ -11,6 +11,58 @@ const DEFAULT_CENTER: [number, number] = [117.5, -2.2];
 const DEFAULT_ZOOM = 4.2;
 const STATUS_LABELS = ['Working', 'Mobilizing', 'Idle', 'Standby', 'Maintenance', 'Survey'] as const;
 
+function tuneBasemapPalette(map: MapLibreMap) {
+  const style = map.getStyle();
+  if (!style?.layers) return;
+
+  for (const layer of style.layers) {
+    const id = layer.id.toLowerCase();
+    const sourceLayer = String((layer as { source?: string; 'source-layer'?: string })['source-layer'] ?? '').toLowerCase();
+    const type = layer.type;
+
+    const isWater = /water|ocean|lake|river|waterway/.test(id) || /water|ocean|lake|river|waterway/.test(sourceLayer);
+    const isLand = /land|background/.test(id) || /land/.test(sourceLayer);
+    const isRoad = /road|street|highway/.test(id) || /road|transport/.test(sourceLayer);
+    const isBoundary = /boundary|admin|border/.test(id) || /boundary|admin/.test(sourceLayer);
+    const isLabel = type === 'symbol' || /label|place|poi/.test(id) || /name/.test(sourceLayer);
+
+    if (isWater) {
+      if (type === 'fill') {
+        map.setPaintProperty(layer.id, 'fill-color', '#DCEEFF');
+        map.setPaintProperty(layer.id, 'fill-outline-color', '#BFD9F3');
+      }
+      if (type === 'line') {
+        map.setPaintProperty(layer.id, 'line-color', '#BFD9F3');
+        map.setPaintProperty(layer.id, 'line-opacity', 0.7);
+      }
+      continue;
+    }
+
+    if (isLand && type === 'fill') {
+      map.setPaintProperty(layer.id, 'fill-color', '#F8FAFC');
+      continue;
+    }
+
+    if (isBoundary && type === 'line') {
+      map.setPaintProperty(layer.id, 'line-color', '#E5E7EB');
+      map.setPaintProperty(layer.id, 'line-opacity', 0.6);
+      continue;
+    }
+
+    if (isRoad && type === 'line') {
+      map.setPaintProperty(layer.id, 'line-color', '#EAEFF4');
+      map.setPaintProperty(layer.id, 'line-opacity', 0.65);
+      continue;
+    }
+
+    if (isLabel) {
+      if (type === 'symbol') {
+        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      }
+    }
+  }
+}
+
 export function Map({
   assets,
   projects,
@@ -65,6 +117,7 @@ export function Map({
     map.addControl(new maplibregl.NavigationControl(), 'bottom-left');
 
     map.on('load', () => {
+      tuneBasemapPalette(map);
       map.addSource('project-polygons', {
         type: 'geojson',
         data: polygonSource,
@@ -114,6 +167,7 @@ export function Map({
       el.type = 'button';
       el.className = 'h-5 w-5 rounded-[4px] border-2 bg-white shadow-soft';
       el.style.borderColor = '#1D498B';
+      el.style.boxShadow = '0 2px 6px rgba(15,23,42,0.18)';
       el.style.display = 'grid';
       el.style.placeItems = 'center';
       const dot = document.createElement('span');
@@ -131,6 +185,7 @@ export function Map({
       el.type = 'button';
       el.className = 'h-6 w-6 rounded-full border-2 bg-white shadow-soft';
       el.style.borderColor = '#1D498B';
+      el.style.boxShadow = '0 2px 6px rgba(15,23,42,0.18)';
       el.style.display = 'grid';
       el.style.placeItems = 'center';
       const dot = document.createElement('span');
