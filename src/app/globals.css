@@ -24,7 +24,7 @@ body,
 }
 
 body {
-  background: radial-gradient(circle at 0% 0%, #fff, var(--surface));
+  background: var(--bg);
   color: var(--text-primary);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }

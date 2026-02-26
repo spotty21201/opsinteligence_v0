@@ -1,4 +1,5 @@
 import { listDailyLogs, listProjects } from '@/lib/repository';
+import { PrintRouteShell } from '@/components/routes/report/print-route';
 
 export default async function PrintReportPage({
   params,
@@ -17,6 +18,7 @@ export default async function PrintReportPage({
   const avg = logs.length ? logs.reduce((sum, log) => sum + log.progress_value, 0) / logs.length : 0;
 
   return (
+    <PrintRouteShell>
     <div className="mx-auto max-w-[900px] bg-white p-8 text-slate-900 print:max-w-none print:p-6">
       <header className="border-b pb-4">
         <h1 className="text-2xl font-semibold">3Sigma Ops Intelligence — {project.name}</h1>
@@ -58,5 +60,6 @@ export default async function PrintReportPage({
 
       {print === '1' && <style>{`@page { size: A4; margin: 12mm; }`}</style>}
     </div>
+    </PrintRouteShell>
   );
 }

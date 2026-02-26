@@ -5,6 +5,7 @@ import { Asset, Project } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/toast-provider';
 
 export function DispatchModal({
   open,
@@ -12,13 +13,16 @@ export function DispatchModal({
   assets,
   projects,
   prefill,
+  onCreated,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   assets: Asset[];
   projects: Project[];
   prefill?: { projectId?: string; assetId?: string } | null;
+  onCreated?: () => Promise<void> | void;
 }) {
+  const toast = useToast();
   const [projectId, setProjectId] = useState(prefill?.projectId ?? projects[0]?.id ?? '');
   const [assetId, setAssetId] = useState(prefill?.assetId ?? assets[0]?.id ?? '');
   const [eta, setEta] = useState('');
@@ -31,7 +35,11 @@ export function DispatchModal({
   }, [prefill]);
 
   async function submit() {
-    await fetch('/api/assignments', {
+    if (!projectId || !assetId || !eta) {
+      toast('Project, asset, and ETA are required', 'error');
+      return;
+    }
+    const response = await fetch('/api/assignments', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -43,6 +51,12 @@ export function DispatchModal({
         status: 'Planned',
       }),
     });
+    if (!response.ok) {
+      toast('Failed to create assignment', 'error');
+      return;
+    }
+    toast('Assignment created', 'success');
+    await onCreated?.();
     onOpenChange(false);
   }
 

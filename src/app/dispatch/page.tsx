@@ -1,45 +1,108 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
+import { useToast } from '@/components/ui/toast-provider';
+import { DispatchRouteShell } from '@/components/routes/dispatch/dispatch-route';
 import { statusTagClasses } from '@/styles/tokens';
 import { Assignment, Asset, Project } from '@/lib/types';
 
 export default function DispatchPage() {
+  const toast = useToast();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [form, setForm] = useState({ project_id: '', asset_id: '', eta_estimate: '', mobilization_checklist: '[{"item":"Safety briefing","done":false}]', risk_notes: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<Assignment | null>(null);
+  const [form, setForm] = useState({
+    project_id: '',
+    asset_id: '',
+    eta_estimate: '',
+    mobilization_checklist: '[{"item":"Safety briefing","done":false}]',
+    risk_notes: '',
+  });
+  const [editForm, setEditForm] = useState({
+    eta_estimate: '',
+    status: 'Planned',
+    mobilization_checklist: '[]',
+    risk_notes: '',
+  });
 
-  useEffect(() => {
-    Promise.all([
+  async function loadAll() {
+    setLoading(true);
+    const [a, p, as] = await Promise.all([
       fetch('/api/assets').then((r) => r.json()),
       fetch('/api/projects').then((r) => r.json()),
       fetch('/api/assignments').then((r) => r.json()),
-    ]).then(([a, p, as]) => {
-      setAssets(a.items || []);
-      setProjects(p.items || []);
-      setAssignments(as.items || []);
-      setForm((prev) => ({ ...prev, project_id: p.items?.[0]?.id ?? '', asset_id: a.items?.[0]?.id ?? '' }));
-    });
+    ]);
+    setAssets(a.items || []);
+    setProjects(p.items || []);
+    setAssignments(as.items || []);
+    setForm((prev) => ({ ...prev, project_id: p.items?.[0]?.id ?? '', asset_id: a.items?.[0]?.id ?? '' }));
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    void loadAll();
   }, []);
 
+  const assignmentRows = useMemo(() => assignments, [assignments]);
+
   async function createAssignment() {
-    await fetch('/api/assignments', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        mobilization_checklist: JSON.parse(form.mobilization_checklist || '[]'),
-        status: 'Planned',
-      }),
-    });
-    const refreshed = await fetch('/api/assignments').then((r) => r.json());
-    setAssignments(refreshed.items || []);
+    if (!form.project_id || !form.asset_id || !form.eta_estimate) {
+      toast('Project, asset, and ETA are required', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const response = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          mobilization_checklist: JSON.parse(form.mobilization_checklist || '[]'),
+          status: 'Planned',
+        }),
+      });
+      if (!response.ok) throw new Error('failed create');
+      await loadAll();
+      toast('Assignment created', 'success');
+    } catch {
+      toast('Failed to create assignment', 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    try {
+      const response = await fetch('/api/assignments', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          id: editing.id,
+          eta_estimate: editForm.eta_estimate,
+          status: editForm.status,
+          mobilization_checklist: JSON.parse(editForm.mobilization_checklist || '[]'),
+          risk_notes: editForm.risk_notes,
+        }),
+      });
+      if (!response.ok) throw new Error('failed save');
+      setEditing(null);
+      await loadAll();
+      toast('Assignment updated', 'success');
+    } catch {
+      toast('Failed to update assignment', 'error');
+    }
   }
 
   return (
+    <DispatchRouteShell>
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="rounded-2xl border bg-white p-4 lg:col-span-1">
         <h1 className="text-lg font-semibold">Dispatch Planner</h1>
@@ -54,28 +117,75 @@ export default function DispatchPage() {
               {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
             </select>
           </label>
-          <label className="grid gap-1">ETA estimate<input className="h-10 rounded-xl border px-2" type="date" value={form.eta_estimate} onChange={(e) => setForm({ ...form, eta_estimate: e.target.value })} /></label>
-          <label className="grid gap-1">Checklist JSON<textarea className="rounded-xl border p-2" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} /></label>
-          <label className="grid gap-1">Risk notes<textarea className="rounded-xl border p-2" value={form.risk_notes} onChange={(e) => setForm({ ...form, risk_notes: e.target.value })} /></label>
-          <Button onClick={createAssignment}>Create Assignment</Button>
+          <label className="grid gap-1">ETA estimate
+            <input className="h-10 rounded-xl border px-2" type="date" value={form.eta_estimate} onChange={(e) => setForm({ ...form, eta_estimate: e.target.value })} />
+          </label>
+          <label className="grid gap-1">Checklist JSON
+            <textarea className="rounded-xl border p-2" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} />
+          </label>
+          <label className="grid gap-1">Risk notes
+            <textarea className="rounded-xl border p-2" value={form.risk_notes} onChange={(e) => setForm({ ...form, risk_notes: e.target.value })} />
+          </label>
+          <Button onClick={createAssignment} disabled={saving}>{saving ? <Spinner /> : null}Create Assignment</Button>
         </div>
       </div>
+
       <div className="rounded-2xl border bg-white p-4 lg:col-span-2">
         <h2 className="mb-3 text-base font-semibold">Assignments</h2>
-        <table className="w-full text-sm">
-          <thead className="text-left text-slate-500"><tr><th>Project</th><th>Asset</th><th>ETA</th><th>Status</th></tr></thead>
-          <tbody>
-            {assignments.map((row) => (
-              <tr className="border-t" key={row.id}>
-                <td className="py-2">{projects.find((p) => p.id === row.project_id)?.name ?? row.project_id}</td>
-                <td>{assets.find((a) => a.id === row.asset_id)?.name ?? row.asset_id}</td>
-                <td>{row.eta_estimate}</td>
-                <td><Badge className={statusTagClasses[row.status]}>{row.status}</Badge></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-slate-500"><Spinner />Loading assignments...</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-left text-slate-500"><tr><th>Project</th><th>Asset</th><th>ETA</th><th>Status</th></tr></thead>
+            <tbody>
+              {assignmentRows.map((row) => (
+                <tr
+                  className="cursor-pointer border-t hover:bg-slate-50"
+                  key={row.id}
+                  onClick={() => {
+                    setEditing(row);
+                    setEditForm({
+                      eta_estimate: row.eta_estimate,
+                      status: row.status,
+                      mobilization_checklist: JSON.stringify(row.mobilization_checklist, null, 2),
+                      risk_notes: row.risk_notes,
+                    });
+                  }}
+                >
+                  <td className="py-2">{projects.find((p) => p.id === row.project_id)?.name ?? row.project_id}</td>
+                  <td>{assets.find((a) => a.id === row.asset_id)?.name ?? row.asset_id}</td>
+                  <td>{row.eta_estimate}</td>
+                  <td><Badge className={statusTagClasses[row.status]}>{row.status}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
+
+      <Dialog open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent>
+          <DialogTitle>Edit Assignment</DialogTitle>
+          <div className="mt-3 space-y-2 text-sm">
+            <label className="grid gap-1">Status
+              <select className="h-10 rounded-xl border px-2" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}>
+                <option>Planned</option><option>Active</option><option>Completed</option>
+              </select>
+            </label>
+            <label className="grid gap-1">ETA estimate
+              <input className="h-10 rounded-xl border px-2" type="date" value={editForm.eta_estimate} onChange={(e) => setEditForm({ ...editForm, eta_estimate: e.target.value })} />
+            </label>
+            <label className="grid gap-1">Checklist JSON
+              <textarea className="rounded-xl border p-2" value={editForm.mobilization_checklist} onChange={(e) => setEditForm({ ...editForm, mobilization_checklist: e.target.value })} />
+            </label>
+            <label className="grid gap-1">Risk notes
+              <textarea className="rounded-xl border p-2" value={editForm.risk_notes} onChange={(e) => setEditForm({ ...editForm, risk_notes: e.target.value })} />
+            </label>
+            <Button onClick={saveEdit}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+    </DispatchRouteShell>
   );
 }

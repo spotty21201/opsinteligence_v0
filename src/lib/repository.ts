@@ -59,13 +59,44 @@ export async function createAssignment(payload: Omit<Assignment, 'id' | 'created
 
   if (!hasSupabase) {
     mem.assignments.unshift(assignment);
+    const asset = mem.assets.find((row) => row.id === assignment.asset_id);
+    if (asset) {
+      asset.status = assignment.status === 'Completed' ? 'Idle' : 'Mobilizing';
+      asset.last_update_at = new Date().toISOString();
+    }
     return assignment;
   }
 
   const sb = getSupabaseServerClient();
   const { data, error } = await sb!.from('assignments').insert(assignment).select('*').single();
   if (error) throw error;
+  await sb!.from('assets').update({ status: assignment.status === 'Completed' ? 'Idle' : 'Mobilizing' }).eq('id', assignment.asset_id);
   return data as Assignment;
+}
+
+export async function updateAssignment(assignmentId: string, payload: Partial<Assignment>) {
+  if (!hasSupabase) {
+    const idx = mem.assignments.findIndex((row) => row.id === assignmentId);
+    if (idx < 0) return null;
+    mem.assignments[idx] = { ...mem.assignments[idx], ...payload };
+    const updated = mem.assignments[idx];
+    const asset = mem.assets.find((row) => row.id === updated.asset_id);
+    if (asset) {
+      asset.status = updated.status === 'Completed' ? 'Idle' : updated.status === 'Active' ? 'Working' : 'Mobilizing';
+      asset.last_update_at = new Date().toISOString();
+    }
+    return updated;
+  }
+
+  const sb = getSupabaseServerClient();
+  const { data, error } = await sb!.from('assignments').update(payload).eq('id', assignmentId).select('*').single();
+  if (error) throw error;
+  const updated = data as Assignment;
+  await sb!
+    .from('assets')
+    .update({ status: updated.status === 'Completed' ? 'Idle' : updated.status === 'Active' ? 'Working' : 'Mobilizing' })
+    .eq('id', updated.asset_id);
+  return updated;
 }
 
 export async function listDailyLogs(projectId?: string) {
