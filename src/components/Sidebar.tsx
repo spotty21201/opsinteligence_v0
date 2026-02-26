@@ -58,7 +58,7 @@ export function Sidebar() {
         <div className="rounded-2xl border bg-white px-4 py-4 shadow-soft">
           <TrisigmaLogo />
           <p className="mt-2 text-[21px] font-extrabold tracking-[-0.01em] text-slate-900">3Sigma Ops Intelligence</p>
-          <p className="mt-1 text-[14px] italic text-slate-700" style={{ fontFamily: 'var(--font-serif)' }}>See the fleet. Plan mobilization.</p>
+          <p className="mt-1 text-[14px] italic text-slate-700">See the fleet. Plan mobilization.</p>
           <div className="mt-3 h-[2px] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
           <span className="mt-3 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium text-slate-500">Release 0.0 Demo</span>
         </div>
@@ -75,7 +75,7 @@ export function Sidebar() {
                 <div>
                   <TrisigmaLogo />
                   <p className="mt-2 text-[20px] font-extrabold tracking-[-0.01em] text-slate-900">3Sigma Ops Intelligence</p>
-                  <p className="mt-1 text-[14px] italic text-slate-700" style={{ fontFamily: 'var(--font-serif)' }}>See the fleet. Plan mobilization.</p>
+                  <p className="mt-1 text-[14px] italic text-slate-700">See the fleet. Plan mobilization.</p>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg border p-1"><X className="h-4 w-4" /></button>
               </div>

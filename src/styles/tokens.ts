@@ -1,7 +1,7 @@
 export const designTokens = {
   typography: {
     primary: 'Inter',
-    accent: 'Instrument Serif',
+    accent: 'Inter',
   },
   colors: {
     bg: '#FFFFFF',

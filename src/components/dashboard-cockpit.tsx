@@ -152,7 +152,7 @@ export function DashboardCockpit({
         {kpis.map((item) => (
           <div key={item.label} className="rounded-xl border bg-white px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
             <div className="flex items-start justify-between">
-              <p className="text-[12px] italic text-slate-600" style={{ fontFamily: 'var(--font-serif)' }}>{item.label}</p>
+              <p className="text-[12px] italic text-slate-600">{item.label}</p>
               <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
             </div>
             <p className="text-[26px] font-semibold leading-tight text-slate-900">{item.value}</p>
