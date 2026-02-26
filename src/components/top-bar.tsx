@@ -35,7 +35,7 @@ export function TopBar({
           <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search assets or projects" className="pl-9" />
         </div>
-        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900" value={filters.region} onChange={(e) => onFilter('region', e.target.value)}>
+        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900 focus:border-[color:var(--brand-primary)]" value={filters.region} onChange={(e) => onFilter('region', e.target.value)}>
           <option>All</option>
           <option>Java</option>
           <option>Sumatra</option>
@@ -43,13 +43,13 @@ export function TopBar({
           <option>Sulawesi</option>
           <option>Papua</option>
         </select>
-        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900" value={filters.serviceLine} onChange={(e) => onFilter('serviceLine', e.target.value)}>
+        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900 focus:border-[color:var(--brand-primary)]" value={filters.serviceLine} onChange={(e) => onFilter('serviceLine', e.target.value)}>
           <option>All</option>
           <option>Dredging</option>
           <option>Dewatering</option>
           <option>SoilImprovement</option>
         </select>
-        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900" value={filters.status} onChange={(e) => onFilter('status', e.target.value)}>
+        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900 focus:border-[color:var(--brand-primary)]" value={filters.status} onChange={(e) => onFilter('status', e.target.value)}>
           <option>All</option>
           <option>Working</option>
           <option>Mobilizing</option>
@@ -57,7 +57,7 @@ export function TopBar({
           <option>Maintenance</option>
           <option>Standby</option>
         </select>
-        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900" value={filters.phase} onChange={(e) => onFilter('phase', e.target.value)}>
+        <select className="h-9 appearance-none rounded-xl border bg-white px-2 text-sm text-slate-900 focus:border-[color:var(--brand-primary)]" value={filters.phase} onChange={(e) => onFilter('phase', e.target.value)}>
           <option>All</option>
           <option>Mobilisasi</option>
           <option>Survey</option>

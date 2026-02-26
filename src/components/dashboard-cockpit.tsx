@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
+import { BriefcaseBusiness, Factory, ShipWheel, Timer } from 'lucide-react';
 import { TopBar } from '@/components/top-bar';
 import { RightDrawer } from '@/components/drawers/right-drawer';
 import { DispatchModal } from '@/components/dispatch/dispatch-modal';
@@ -128,10 +129,10 @@ export function DashboardCockpit({
 
   const noResults = filtered.assets.length === 0 && filtered.projects.length === 0;
   const kpis = [
-    { label: 'Active Assets', value: liveAssets.filter((row) => row.status === 'Working').length },
-    { label: 'Idle / Standby', value: liveAssets.filter((row) => row.status === 'Idle' || row.status === 'Standby').length },
-    { label: 'Projects in Operasi', value: liveProjects.filter((row) => row.phase === 'Operasi').length },
-    { label: 'Assignments Planned', value: liveAssignments.filter((row) => row.status === 'Planned').length },
+    { label: 'Active Assets', value: liveAssets.filter((row) => row.status === 'Working').length, icon: ShipWheel },
+    { label: 'Idle / Standby', value: liveAssets.filter((row) => row.status === 'Idle' || row.status === 'Standby').length, icon: Factory },
+    { label: 'Projects in Operasi', value: liveProjects.filter((row) => row.phase === 'Operasi').length, icon: BriefcaseBusiness },
+    { label: 'Assignments Planned', value: liveAssignments.filter((row) => row.status === 'Planned').length, icon: Timer },
   ];
 
   return (
@@ -149,9 +150,12 @@ export function DashboardCockpit({
       </div>
       <div className="absolute left-4 right-[450px] top-[98px] z-20 grid grid-cols-2 gap-2 lg:grid-cols-4">
         {kpis.map((item) => (
-          <div key={item.label} className="rounded-xl border bg-white px-3 py-2 shadow-soft">
-            <p className="text-[11px] text-slate-500">{item.label}</p>
-            <p className="text-xl font-semibold text-slate-900">{item.value}</p>
+          <div key={item.label} className="rounded-xl border bg-white px-3 py-2 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)]">
+            <div className="flex items-start justify-between">
+              <p className="text-[12px] italic text-slate-600" style={{ fontFamily: 'var(--font-serif)' }}>{item.label}</p>
+              <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
+            </div>
+            <p className="text-[26px] font-semibold leading-tight text-slate-900">{item.value}</p>
           </div>
         ))}
       </div>
