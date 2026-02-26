@@ -7,6 +7,14 @@ import { Assignment, DailyLog, Project } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { statusTagClasses } from '@/styles/tokens';
+const phaseHelp: Record<string, string> = {
+  Mobilisasi: 'Mobilization and movement to site',
+  Survey: 'Survey and validation stage',
+  Lokasi: 'Site setup and readiness',
+  Perakitan: 'Assembly and installation stage',
+  Operasi: 'Active operation and production',
+  Disposal: 'Disposal and close-out stage',
+};
 
 export function ProjectSnapshot({
   project,
@@ -31,7 +39,7 @@ export function ProjectSnapshot({
         <div className="mt-3 grid grid-cols-3 gap-2 lg:grid-cols-6">
           {PROJECT_PHASES.map((phase) => (
             <div key={phase} className="rounded-xl border bg-slate-50 p-2 text-xs">
-              <Badge className={statusTagClasses[phase]}>{phase}</Badge>
+              <Badge title={phaseHelp[phase]} className={statusTagClasses[phase]}>{phase}</Badge>
             </div>
           ))}
         </div>

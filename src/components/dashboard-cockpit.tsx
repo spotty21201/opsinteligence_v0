@@ -1,13 +1,24 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Map } from '@/components/Map';
+import dynamic from 'next/dynamic';
+import { useEffect, useMemo, useState } from 'react';
 import { TopBar } from '@/components/top-bar';
 import { RightDrawer } from '@/components/drawers/right-drawer';
 import { DispatchModal } from '@/components/dispatch/dispatch-modal';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Spinner } from '@/components/ui/spinner';
 import { useUiStore } from '@/store/ui-store';
 import { Asset, Assignment, DailyLog, Project, SpeedProfile } from '@/lib/types';
 import { useToast } from '@/components/ui/toast-provider';
+
+const MapClient = dynamic(() => import('@/components/Map').then((mod) => mod.Map), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full min-h-[620px] w-full items-center justify-center rounded-2xl border bg-slate-50">
+      <span className="inline-flex items-center gap-2 text-sm text-slate-600"><Spinner />Loading map...</span>
+    </div>
+  ),
+});
 
 function regionFor(lat: number, lng: number) {
   if (lat > 1) return 'Sumatra';
@@ -34,37 +45,58 @@ export function DashboardCockpit({
   const toast = useToast();
   const [dispatchOpen, setDispatchOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filters, setFilters] = useState({ region: 'All', serviceLine: 'All', status: 'All', phase: 'All' });
+  const [liveAssets, setLiveAssets] = useState(assets);
+  const [liveProjects, setLiveProjects] = useState(projects);
   const [liveLogs, setLiveLogs] = useState(logs);
   const [liveAssignments, setLiveAssignments] = useState(assignments);
   const [exporting, setExporting] = useState(false);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim().toLowerCase()), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    const handleRefresh = async () => {
+      const [assetRes, projectRes] = await Promise.all([fetch('/api/assets').then((r) => r.json()), fetch('/api/projects').then((r) => r.json())]);
+      setLiveAssets(assetRes.items ?? []);
+      setLiveProjects(projectRes.items ?? []);
+    };
+    window.addEventListener('ops-data-refresh', handleRefresh);
+    return () => window.removeEventListener('ops-data-refresh', handleRefresh);
+  }, []);
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const filteredAssets = assets.filter((asset) => {
+    const filteredAssets = liveAssets.filter((asset) => {
       if (filters.region !== 'All' && regionFor(asset.lat, asset.lng) !== filters.region) return false;
       if (filters.serviceLine !== 'All' && asset.service_line !== filters.serviceLine) return false;
       if (filters.status !== 'All' && asset.status !== filters.status) return false;
-      if (q && !asset.name.toLowerCase().includes(q)) return false;
+      if (debouncedSearch && !asset.name.toLowerCase().includes(debouncedSearch)) return false;
       return true;
     });
-    const filteredProjects = projects.filter((project) => {
+    const filteredProjects = liveProjects.filter((project) => {
       if (filters.region !== 'All' && regionFor(project.lat, project.lng) !== filters.region) return false;
       if (filters.serviceLine !== 'All' && project.service_line !== filters.serviceLine) return false;
       if (filters.phase !== 'All' && project.phase !== filters.phase) return false;
-      if (q && !project.name.toLowerCase().includes(q)) return false;
+      if (debouncedSearch && !project.name.toLowerCase().includes(debouncedSearch)) return false;
       return true;
     });
     return { assets: filteredAssets, projects: filteredProjects };
-  }, [assets, projects, filters, search]);
+  }, [liveAssets, liveProjects, filters, debouncedSearch]);
 
   async function refreshAssignmentsAndLogs() {
-    const [assignmentRes, logRes] = await Promise.all([
+    const [assignmentRes, logRes, assetRes, projectRes] = await Promise.all([
       fetch('/api/assignments').then((r) => r.json()),
       fetch('/api/daily-logs').then((r) => r.json()),
+      fetch('/api/assets').then((r) => r.json()),
+      fetch('/api/projects').then((r) => r.json()),
     ]);
     setLiveAssignments(assignmentRes.items ?? []);
     setLiveLogs(logRes.items ?? []);
+    setLiveAssets(assetRes.items ?? []);
+    setLiveProjects(projectRes.items ?? []);
   }
 
   async function exportSelectedProject() {
@@ -94,6 +126,8 @@ export function DashboardCockpit({
     }
   }
 
+  const noResults = filtered.assets.length === 0 && filtered.projects.length === 0;
+
   return (
     <div className="relative h-[calc(100vh-2rem)] overflow-hidden rounded-2xl border bg-white">
       <div className="absolute left-4 right-[450px] top-4 z-20">
@@ -109,17 +143,25 @@ export function DashboardCockpit({
       </div>
 
       <div className="h-full w-full pr-[430px]">
-        <Map
-          assets={filtered.assets}
-          projects={filtered.projects}
-          onSelectAsset={(id) => setDrawer({ mode: 'asset', selectedId: id })}
-          onSelectProject={(id) => setDrawer({ mode: 'project', selectedId: id })}
-        />
+        <ErrorBoundary fallbackTitle="Dashboard map unavailable" fallbackDescription="Map rendering failed. You can still use tables and reports.">
+          <MapClient
+            assets={filtered.assets}
+            projects={filtered.projects}
+            onSelectAsset={(id) => setDrawer({ mode: 'asset', selectedId: id })}
+            onSelectProject={(id) => setDrawer({ mode: 'project', selectedId: id })}
+          />
+        </ErrorBoundary>
       </div>
 
+      {noResults && (
+        <div className="absolute inset-x-8 top-28 z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft">
+          No map results found for current search and filters.
+        </div>
+      )}
+
       <RightDrawer
-        assets={assets}
-        projects={projects}
+        assets={liveAssets}
+        projects={liveProjects}
         logs={liveLogs}
         assignments={liveAssignments}
         speedProfiles={speedProfiles}
@@ -133,8 +175,8 @@ export function DashboardCockpit({
       <DispatchModal
         open={dispatchOpen}
         onOpenChange={setDispatchOpen}
-        assets={assets}
-        projects={projects}
+        assets={liveAssets}
+        projects={liveProjects}
         prefill={dispatchPrefill}
         onCreated={refreshAssignmentsAndLogs}
       />

@@ -8,13 +8,15 @@ import { Spinner } from '@/components/ui/spinner';
 import { useToast } from '@/components/ui/toast-provider';
 import { DispatchRouteShell } from '@/components/routes/dispatch/dispatch-route';
 import { statusTagClasses } from '@/styles/tokens';
-import { Assignment, Asset, Project } from '@/lib/types';
+import { recommendAssets } from '@/lib/recommendation';
+import { Assignment, Asset, Project, SpeedProfile } from '@/lib/types';
 
 export default function DispatchPage() {
   const toast = useToast();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [speedProfiles, setSpeedProfiles] = useState<SpeedProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Assignment | null>(null);
@@ -34,14 +36,16 @@ export default function DispatchPage() {
 
   async function loadAll() {
     setLoading(true);
-    const [a, p, as] = await Promise.all([
+    const [a, p, as, speedRes] = await Promise.all([
       fetch('/api/assets').then((r) => r.json()),
       fetch('/api/projects').then((r) => r.json()),
       fetch('/api/assignments').then((r) => r.json()),
+      fetch('/api/admin/reset?peek=speeds').then((r) => r.json()),
     ]);
     setAssets(a.items || []);
     setProjects(p.items || []);
     setAssignments(as.items || []);
+    setSpeedProfiles(speedRes.items || []);
     setForm((prev) => ({ ...prev, project_id: p.items?.[0]?.id ?? '', asset_id: a.items?.[0]?.id ?? '' }));
     setLoading(false);
   }
@@ -51,6 +55,17 @@ export default function DispatchPage() {
   }, []);
 
   const assignmentRows = useMemo(() => assignments, [assignments]);
+  const selectedProject = useMemo(() => projects.find((project) => project.id === form.project_id), [projects, form.project_id]);
+  const recommendations = useMemo(() => {
+    if (!selectedProject) return [];
+    return recommendAssets(selectedProject, assets, speedProfiles);
+  }, [selectedProject, assets, speedProfiles]);
+
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      setForm((curr) => ({ ...curr, asset_id: recommendations[0].asset.id }));
+    }
+  }, [recommendations]);
 
   async function createAssignment() {
     if (!form.project_id || !form.asset_id || !form.eta_estimate) {
@@ -59,17 +74,35 @@ export default function DispatchPage() {
     }
     setSaving(true);
     try {
+      let checklist: Array<{ item: string; done: boolean }> = [];
+      try {
+        checklist = JSON.parse(form.mobilization_checklist || '[]');
+      } catch {
+        toast('Checklist JSON is invalid', 'error');
+        setSaving(false);
+        return;
+      }
       const response = await fetch('/api/assignments', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          mobilization_checklist: JSON.parse(form.mobilization_checklist || '[]'),
+          mobilization_checklist: checklist,
           status: 'Planned',
         }),
       });
       if (!response.ok) throw new Error('failed create');
-      await loadAll();
+      const payload = await response.json();
+      if (payload.item) {
+        setAssignments((curr) => [payload.item, ...curr]);
+      }
+      setForm((curr) => ({
+        project_id: curr.project_id,
+        asset_id: recommendations[0]?.asset.id ?? curr.asset_id,
+        eta_estimate: '',
+        mobilization_checklist: '[{\"item\":\"Safety briefing\",\"done\":false}]',
+        risk_notes: '',
+      }));
       toast('Assignment created', 'success');
     } catch {
       toast('Failed to create assignment', 'error');
@@ -81,6 +114,13 @@ export default function DispatchPage() {
   async function saveEdit() {
     if (!editing) return;
     try {
+      let checklist: Array<{ item: string; done: boolean }> = [];
+      try {
+        checklist = JSON.parse(editForm.mobilization_checklist || '[]');
+      } catch {
+        toast('Checklist JSON is invalid', 'error');
+        return;
+      }
       const response = await fetch('/api/assignments', {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -88,7 +128,7 @@ export default function DispatchPage() {
           id: editing.id,
           eta_estimate: editForm.eta_estimate,
           status: editForm.status,
-          mobilization_checklist: JSON.parse(editForm.mobilization_checklist || '[]'),
+          mobilization_checklist: checklist,
           risk_notes: editForm.risk_notes,
         }),
       });
@@ -114,17 +154,26 @@ export default function DispatchPage() {
           </label>
           <label className="grid gap-1">Asset
             <select className="h-10 rounded-xl border px-2" value={form.asset_id} onChange={(e) => setForm({ ...form, asset_id: e.target.value })}>
-              {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
+              {(recommendations.length > 0 ? recommendations.map((rec) => rec.asset) : assets).map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
+              ))}
             </select>
           </label>
+          {recommendations.length > 0 && (
+            <div className="rounded-xl border bg-slate-50 p-2 text-xs text-slate-600">
+              Recommended: {recommendations[0].asset.name} — {recommendations[0].explanation}
+            </div>
+          )}
           <label className="grid gap-1">ETA estimate
             <input className="h-10 rounded-xl border px-2" type="date" value={form.eta_estimate} onChange={(e) => setForm({ ...form, eta_estimate: e.target.value })} />
           </label>
           <label className="grid gap-1">Checklist JSON
-            <textarea className="rounded-xl border p-2" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} />
+            <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={form.mobilization_checklist} onChange={(e) => setForm({ ...form, mobilization_checklist: e.target.value })} />
           </label>
           <label className="grid gap-1">Risk notes
-            <textarea className="rounded-xl border p-2" value={form.risk_notes} onChange={(e) => setForm({ ...form, risk_notes: e.target.value })} />
+            <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={form.risk_notes} onChange={(e) => setForm({ ...form, risk_notes: e.target.value })} />
           </label>
           <Button onClick={createAssignment} disabled={saving}>{saving ? <Spinner /> : null}Create Assignment</Button>
         </div>
@@ -176,10 +225,10 @@ export default function DispatchPage() {
               <input className="h-10 rounded-xl border px-2" type="date" value={editForm.eta_estimate} onChange={(e) => setEditForm({ ...editForm, eta_estimate: e.target.value })} />
             </label>
             <label className="grid gap-1">Checklist JSON
-              <textarea className="rounded-xl border p-2" value={editForm.mobilization_checklist} onChange={(e) => setEditForm({ ...editForm, mobilization_checklist: e.target.value })} />
+              <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={editForm.mobilization_checklist} onChange={(e) => setEditForm({ ...editForm, mobilization_checklist: e.target.value })} />
             </label>
             <label className="grid gap-1">Risk notes
-              <textarea className="rounded-xl border p-2" value={editForm.risk_notes} onChange={(e) => setEditForm({ ...editForm, risk_notes: e.target.value })} />
+              <textarea className="min-h-20 rounded-xl border bg-white p-2 text-slate-900" value={editForm.risk_notes} onChange={(e) => setEditForm({ ...editForm, risk_notes: e.target.value })} />
             </label>
             <Button onClick={saveEdit}>Save</Button>
           </div>

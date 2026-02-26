@@ -39,6 +39,13 @@ export function DispatchModal({
       toast('Project, asset, and ETA are required', 'error');
       return;
     }
+    let parsedChecklist: Array<{ item: string; done: boolean }> = [];
+    try {
+      parsedChecklist = JSON.parse(checklist || '[]');
+    } catch {
+      toast('Checklist JSON is invalid', 'error');
+      return;
+    }
     const response = await fetch('/api/assignments', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -46,7 +53,7 @@ export function DispatchModal({
         project_id: projectId,
         asset_id: assetId,
         eta_estimate: eta,
-        mobilization_checklist: JSON.parse(checklist || '[]'),
+        mobilization_checklist: parsedChecklist,
         risk_notes: riskNotes,
         status: 'Planned',
       }),

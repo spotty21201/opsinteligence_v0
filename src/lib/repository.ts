@@ -3,7 +3,7 @@ import path from 'node:path';
 import { DEFAULT_SPEED_PROFILES } from '@/lib/constants';
 import { seededAssets, seededAssignments, seededDailyLogs, seededProjects } from '@/lib/mock-data';
 import { getSupabaseServerClient, hasSupabase } from '@/lib/supabase';
-import { Asset, Assignment, DailyLog, Project, ReportMeta, SpeedProfile } from '@/lib/types';
+import { Asset, Assignment, DailyLog, Project, ReportMeta, RoiAssumptions, SpeedProfile } from '@/lib/types';
 
 const mem = {
   assets: [...seededAssets],
@@ -11,6 +11,14 @@ const mem = {
   assignments: [...seededAssignments],
   logs: [...seededDailyLogs],
   speedProfiles: [...DEFAULT_SPEED_PROFILES],
+  roiAssumptions: {
+    asset_sets: 8,
+    idr_per_day: 115000000,
+    idle_days_baseline: 35,
+    mobilization_cost_per_job: 420000000,
+    jobs_per_year: 14,
+    gross_margin_per_project: 0.22,
+  } as RoiAssumptions,
 };
 
 const reportMetaPath = path.join(process.cwd(), 'generated-reports', 'metadata.json');
@@ -189,4 +197,27 @@ export async function resetSeedData() {
   mem.assignments = [...seededAssignments];
   mem.logs = [...seededDailyLogs];
   mem.speedProfiles = [...DEFAULT_SPEED_PROFILES];
+}
+
+export async function getRoiAssumptions() {
+  if (!hasSupabase) return mem.roiAssumptions;
+  const sb = getSupabaseServerClient();
+  try {
+    const { data } = await sb!.from('demo_settings').select('value').eq('key', 'roi_assumptions').single();
+    return ((data?.value ?? mem.roiAssumptions) as RoiAssumptions);
+  } catch {
+    return mem.roiAssumptions;
+  }
+}
+
+export async function saveRoiAssumptions(payload: RoiAssumptions) {
+  mem.roiAssumptions = payload;
+  if (!hasSupabase) return mem.roiAssumptions;
+  const sb = getSupabaseServerClient();
+  try {
+    await sb!.from('demo_settings').upsert({ key: 'roi_assumptions', value: payload }, { onConflict: 'key' });
+  } catch {
+    // Fall back to in-memory persistence for demo mode when table is unavailable.
+  }
+  return mem.roiAssumptions;
 }

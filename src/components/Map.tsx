@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl, { GeoJSONSource, Map as MapLibreMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Asset, Project } from '@/lib/types';
@@ -23,6 +23,7 @@ export function Map({
   onSelectAsset: (assetId: string) => void;
   onSelectProject: (projectId: string) => void;
 }) {
+  const [loadError, setLoadError] = useState<string | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -43,10 +44,18 @@ export function Map({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (typeof window === 'undefined') return;
+    const canvas = document.createElement('canvas');
+    const hasWebgl = Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl') || canvas.getContext('webgl2'));
+    if (!hasWebgl) {
+      setLoadError('Map unavailable on this browser/device');
+      return;
+    }
+    const styleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      style: styleUrl,
       center: [117.5, -2.2],
       zoom: 4.2,
       attributionControl: {},
@@ -69,6 +78,9 @@ export function Map({
           'fill-outline-color': '#2563EB',
         },
       });
+    });
+    map.on('error', () => {
+      setLoadError('Map tiles failed to load');
     });
 
     mapRef.current = map;
@@ -130,6 +142,14 @@ export function Map({
       markersRef.current.push(marker);
     }
   }, [assets, onSelectAsset, onSelectProject, projects]);
+
+  if (loadError) {
+    return (
+      <div className="flex h-full min-h-[620px] w-full items-center justify-center rounded-2xl border bg-slate-50">
+        <div className="rounded-xl border bg-white p-4 text-sm text-slate-600">{loadError}</div>
+      </div>
+    );
+  }
 
   return <div ref={containerRef} className="h-full min-h-[620px] w-full" />;
 }

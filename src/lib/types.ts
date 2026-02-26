@@ -94,3 +94,12 @@ export interface ReportMeta {
   created_at: string;
   filename: string;
 }
+
+export interface RoiAssumptions {
+  asset_sets: number;
+  idr_per_day: number;
+  idle_days_baseline: number;
+  mobilization_cost_per_job: number;
+  jobs_per_year: number;
+  gross_margin_per_project: number;
+}

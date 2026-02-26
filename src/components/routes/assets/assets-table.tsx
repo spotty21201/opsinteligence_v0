@@ -1,9 +1,21 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { Asset } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { statusTagClasses } from '@/styles/tokens';
 
+const statusHelp: Record<string, string> = {
+  Working: 'Actively producing on site',
+  Mobilizing: 'In transit or setup',
+  Idle: 'Available but not assigned',
+  Maintenance: 'Under maintenance or downtime',
+  Standby: 'Ready and waiting',
+};
+
 export function AssetsTable({ assets }: { assets: Asset[] }) {
+  const router = useRouter();
+
   return (
     <div className="rounded-2xl border bg-white p-4">
       <h1 className="mb-4 text-xl font-semibold">Assets</h1>
@@ -14,11 +26,11 @@ export function AssetsTable({ assets }: { assets: Asset[] }) {
           </thead>
           <tbody>
             {assets.map((asset) => (
-              <tr key={asset.id} className="border-t hover:bg-slate-50">
-                <td className="py-2"><Link className="text-orange-600" href={`/assets/${asset.id}`}>{asset.name}</Link></td>
+              <tr key={asset.id} className="cursor-pointer border-t transition-colors hover:bg-slate-50" onClick={() => router.push(`/assets/${asset.id}`)}>
+                <td className="py-2 font-medium text-orange-600">{asset.name}</td>
                 <td>{asset.type}</td>
                 <td>{asset.service_line}</td>
-                <td><Badge className={statusTagClasses[asset.status]}>{asset.status}</Badge></td>
+                <td><Badge title={statusHelp[asset.status]} className={statusTagClasses[asset.status]}>{asset.status}</Badge></td>
                 <td>{asset.availability_date}</td>
               </tr>
             ))}
