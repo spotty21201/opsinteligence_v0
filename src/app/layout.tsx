@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: '3Sigma Ops Intelligence',
-  description: 'Map-first operations cockpit for 3Sigma',
+  title: 'Dredging Fleet Operation Intelligence',
+  description: 'Map-first operations cockpit for dredging fleet operations',
 };
 
 export const viewport: Viewport = {

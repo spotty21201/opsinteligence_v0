@@ -1,6 +1,5 @@
 import { listDailyLogs, listProjects } from '@/lib/repository';
 import { PrintRouteShell } from '@/components/routes/report/print-route';
-import Image from 'next/image';
 
 export default async function PrintReportPage({
   params,
@@ -23,10 +22,7 @@ export default async function PrintReportPage({
     <PrintRouteShell>
     <div className="mx-auto max-w-[900px] bg-white p-8 text-slate-900 print:max-w-none print:p-6">
       <header className="border-b pb-4">
-        <div className="mb-3">
-          <Image src="/brand/trisigma-logo.png" alt="Trisigma logo" width={168} height={34} className="h-8 w-auto" priority />
-        </div>
-        <h1 className="text-2xl font-semibold">3Sigma Ops Intelligence — {project.name}</h1>
+        <h1 className="text-2xl font-semibold">Dredging Fleet Operation Intelligence — {project.name}</h1>
         <p className="text-xs text-slate-500">Generated {new Date().toLocaleString()}</p>
       </header>
 

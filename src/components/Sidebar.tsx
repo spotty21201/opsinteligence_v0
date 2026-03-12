@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ClipboardList, FileText, LayoutDashboard, Menu, Settings, Ship, Workflow, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TrisigmaLogo } from '@/components/brand/trisigma-logo';
 
 const items = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -54,19 +53,16 @@ export function Sidebar() {
     <>
       <header className="fixed left-0 right-0 top-0 z-40 grid h-14 grid-cols-3 items-center border-b bg-white px-3 sm:hidden">
         <button onClick={() => setOpen(true)} className="rounded-lg border p-2"><Menu className="h-4 w-4" /></button>
-        <p className="text-center text-sm font-semibold">3Sigma Ops Intelligence</p>
+        <p className="text-center text-sm font-semibold">Dredging Fleet Operation Intelligence</p>
         <span />
       </header>
 
       <aside className="hidden h-screen w-64 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4 sm:block">
         <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
-          <TrisigmaLogo />
-          <div className="mt-2 text-[23px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
-            3Sigma Ops
-            <br />
-            Intelligence
+          <div className="text-[23px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+            Dredging Fleet Operation Intelligence
           </div>
-          <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span> for Trisigma.</p>
+          <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span>.</p>
           <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
           <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
           <span className="mt-4 inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">Release 0.0 Demo</span>
@@ -82,13 +78,10 @@ export function Sidebar() {
             <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
               <div className="flex items-start justify-between">
                 <div>
-                  <TrisigmaLogo />
-                  <div className="mt-2 text-[22px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
-                    3Sigma Ops
-                    <br />
-                    Intelligence
+                  <div className="text-[22px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+                    Dredging Fleet Operation Intelligence
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span> for Trisigma.</p>
+                  <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span>.</p>
                   <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg border p-1"><X className="h-4 w-4" /></button>
