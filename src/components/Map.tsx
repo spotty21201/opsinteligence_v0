@@ -28,30 +28,30 @@ function tuneBasemapPalette(map: MapLibreMap) {
 
     if (isWater) {
       if (type === 'fill') {
-        map.setPaintProperty(layer.id, 'fill-color', '#DCEEFF');
-        map.setPaintProperty(layer.id, 'fill-outline-color', '#BFD9F3');
+        map.setPaintProperty(layer.id, 'fill-color', '#BFD4EE');
+        map.setPaintProperty(layer.id, 'fill-outline-color', '#8EAFD5');
       }
       if (type === 'line') {
-        map.setPaintProperty(layer.id, 'line-color', '#BFD9F3');
-        map.setPaintProperty(layer.id, 'line-opacity', 0.7);
+        map.setPaintProperty(layer.id, 'line-color', '#88A9D0');
+        map.setPaintProperty(layer.id, 'line-opacity', 0.78);
       }
       continue;
     }
 
     if (isLand && type === 'fill') {
-      map.setPaintProperty(layer.id, 'fill-color', '#F8FAFC');
+      map.setPaintProperty(layer.id, 'fill-color', '#EEF3F8');
       continue;
     }
 
     if (isBoundary && type === 'line') {
-      map.setPaintProperty(layer.id, 'line-color', '#E5E7EB');
-      map.setPaintProperty(layer.id, 'line-opacity', 0.6);
+      map.setPaintProperty(layer.id, 'line-color', '#7F90A7');
+      map.setPaintProperty(layer.id, 'line-opacity', 0.48);
       continue;
     }
 
     if (isRoad && type === 'line') {
-      map.setPaintProperty(layer.id, 'line-color', '#EAEFF4');
-      map.setPaintProperty(layer.id, 'line-opacity', 0.65);
+      map.setPaintProperty(layer.id, 'line-color', '#F8FBFF');
+      map.setPaintProperty(layer.id, 'line-opacity', 0.88);
       continue;
     }
 
@@ -66,16 +66,20 @@ function tuneBasemapPalette(map: MapLibreMap) {
 export function Map({
   assets,
   projects,
+  selectedAssetId = null,
+  selectedProjectId = null,
   onSelectAsset,
   onSelectProject,
 }: {
   assets: Asset[];
   projects: Project[];
+  selectedAssetId?: string | null;
+  selectedProjectId?: string | null;
   onSelectAsset: (assetId: string) => void;
   onSelectProject: (projectId: string) => void;
 }) {
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [legendOpen, setLegendOpen] = useState(true);
+  const [legendOpen, setLegendOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 640 : true));
   const mapRef = useRef<MapLibreMap | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -127,8 +131,8 @@ export function Map({
         type: 'fill',
         source: 'project-polygons',
         paint: {
-          'fill-color': '#2563EB',
-          'fill-opacity': 0.1,
+          'fill-color': '#1D4ED8',
+          'fill-opacity': 0.14,
           'fill-outline-color': '#2563EB',
         },
       });
@@ -185,9 +189,12 @@ export function Map({
       el.type = 'button';
       el.className = 'h-5 w-5 rounded-[4px] border-2 bg-white shadow-soft';
       el.style.borderColor = '#1D498B';
-      el.style.boxShadow = '0 2px 6px rgba(15,23,42,0.18)';
+      el.style.boxShadow = project.id === selectedProjectId ? '0 0 0 4px rgba(59,130,246,0.22), 0 2px 6px rgba(15,23,42,0.24)' : '0 2px 6px rgba(15,23,42,0.18)';
+      el.style.transform = project.id === selectedProjectId ? 'scale(1.12)' : 'scale(1)';
       el.style.display = 'grid';
       el.style.placeItems = 'center';
+      el.ariaLabel = `Project: ${project.name}`;
+      el.title = `${project.name} (${project.phase})`;
       const dot = document.createElement('span');
       dot.className = 'block h-2.5 w-2.5 rounded-[2px]';
       dot.style.backgroundColor = '#36787D';
@@ -203,9 +210,12 @@ export function Map({
       el.type = 'button';
       el.className = 'h-6 w-6 rounded-full border-2 bg-white shadow-soft';
       el.style.borderColor = '#1D498B';
-      el.style.boxShadow = '0 2px 6px rgba(15,23,42,0.18)';
+      el.style.boxShadow = asset.id === selectedAssetId ? '0 0 0 4px rgba(59,130,246,0.22), 0 2px 6px rgba(15,23,42,0.24)' : '0 2px 6px rgba(15,23,42,0.18)';
+      el.style.transform = asset.id === selectedAssetId ? 'scale(1.12)' : 'scale(1)';
       el.style.display = 'grid';
       el.style.placeItems = 'center';
+      el.ariaLabel = `Asset: ${asset.name}`;
+      el.title = `${asset.name} (${asset.status})`;
       const dot = document.createElement('span');
       dot.className = 'block h-2.5 w-2.5 rounded-full';
       dot.style.backgroundColor = designTokens.status[asset.status];
@@ -220,7 +230,7 @@ export function Map({
       autoFitDone.current = true;
       fitToItems();
     }
-  }, [assets, onSelectAsset, onSelectProject, projects]);
+  }, [assets, onSelectAsset, onSelectProject, projects, selectedAssetId, selectedProjectId]);
 
   function resetView() {
     const map = mapRef.current;
@@ -260,7 +270,7 @@ export function Map({
       <div ref={containerRef} className="h-full min-h-[620px] w-full" />
       <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-col items-end gap-2 sm:left-auto sm:w-auto">
         {legendOpen ? (
-          <div className="max-h-[65vh] w-full overflow-y-auto rounded-xl border bg-white/95 p-3 text-xs shadow-soft backdrop-blur sm:max-h-72 sm:w-60 sm:bg-white/90">
+          <div className="max-h-[65vh] w-full overflow-y-auto rounded-xl border border-[rgba(20,131,138,0.16)] bg-[linear-gradient(180deg,rgba(255,252,247,0.97)_0%,rgba(240,247,248,0.94)_100%)] p-3 text-xs shadow-soft backdrop-blur sm:max-h-72 sm:w-60">
             <p className="mb-2 font-semibold text-slate-700">Map Legend</p>
             <div className="space-y-1.5 text-slate-600">
               <p className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded-full border-2 border-[#1D498B] bg-white" /><span>Asset marker (circle)</span></p>
@@ -279,27 +289,27 @@ export function Map({
             </div>
           </div>
         ) : null}
-        <div className="grid w-full grid-cols-3 gap-1 rounded-xl border bg-white/90 p-1 shadow-soft backdrop-blur sm:w-auto">
+        <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-[rgba(20,131,138,0.16)] bg-[rgba(255,252,247,0.92)] p-1 shadow-soft backdrop-blur sm:w-auto">
           <button
             type="button"
             onClick={() => setLegendOpen((curr) => !curr)}
-            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-[rgba(20,131,138,0.08)]"
           >
             Legend
           </button>
           <button
             type="button"
             onClick={resetView}
-            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-[rgba(20,131,138,0.08)]"
           >
             Reset view
           </button>
           <button
             type="button"
             onClick={fitToItems}
-            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-slate-50"
+            className="rounded-lg border bg-white px-2 py-1 text-[11px] text-slate-700 shadow-sm hover:bg-[rgba(20,131,138,0.08)]"
           >
-            Fit to assets
+            Fit to view
           </button>
         </div>
       </div>

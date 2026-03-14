@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --bg: #ffffff;
-  --surface: #f6f7f9;
-  --border: #e5e7eb;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --accent-orange: #f97316;
-  --brand-primary: #1d498b;
-  --brand-secondary: #36787d;
-  --brand-mid: #587ba8;
-  --brand-soft-blue: #a4b9d0;
-  --brand-soft: #eaeff4;
+  --bg: #fffdf8;
+  --surface: #f4f1e8;
+  --border: #d9deea;
+  --text-primary: #122033;
+  --text-secondary: #5d6b81;
+  --accent-orange: #df7442;
+  --brand-primary: #173a67;
+  --brand-secondary: #14838a;
+  --brand-mid: #2f5f94;
+  --brand-soft-blue: #99ccd0;
+  --brand-soft: #e4edf2;
   --status-working: #16a34a;
   --status-mobilizing: #2563eb;
   --status-idle: #f59e0b;
@@ -29,7 +29,10 @@ body,
 }
 
 body {
-  background: var(--surface);
+  background:
+    radial-gradient(circle at top left, rgba(20, 131, 138, 0.08), transparent 32%),
+    radial-gradient(circle at top right, rgba(223, 116, 66, 0.08), transparent 24%),
+    var(--surface);
   color: var(--text-primary);
   font-family: var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif;
 }
@@ -58,7 +61,7 @@ textarea:focus-visible {
 }
 
 .maplibregl-canvas {
-  filter: saturate(0.88) contrast(0.98);
+  filter: saturate(1.03) contrast(1.06);
 }
 
 @media print {

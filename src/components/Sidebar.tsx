@@ -28,7 +28,9 @@ function NavItems({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
             onClick={onNavigate}
             className={cn(
               'relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 transition-colors',
-              active ? 'border-[color:var(--brand-soft-blue)] bg-[color:var(--brand-soft)] text-[color:var(--brand-primary)]' : 'hover:bg-white',
+              active
+                ? 'border-[color:var(--brand-soft-blue)] bg-gradient-to-r from-[rgba(20,131,138,0.16)] via-[rgba(228,237,242,0.9)] to-[rgba(223,116,66,0.12)] text-[color:var(--brand-primary)] shadow-sm'
+                : 'hover:bg-white/80 hover:text-slate-800',
             )}
           >
             {active ? <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r bg-[color:var(--brand-primary)]" /> : null}
@@ -51,21 +53,20 @@ export function Sidebar() {
 
   return (
     <>
-      <header className="fixed left-0 right-0 top-0 z-40 grid h-14 grid-cols-3 items-center border-b bg-white px-3 sm:hidden">
+      <header className="fixed left-0 right-0 top-0 z-40 grid h-14 grid-cols-3 items-center border-b bg-[rgba(255,253,248,0.96)] px-3 backdrop-blur sm:hidden">
         <button onClick={() => setOpen(true)} className="rounded-lg border p-2"><Menu className="h-4 w-4" /></button>
         <p className="text-center text-sm font-semibold">Dredging Fleet Operation Intelligence</p>
         <span />
       </header>
 
-      <aside className="hidden h-screen w-64 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4 sm:block">
-        <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
-          <div className="text-[23px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+      <aside className="hidden h-screen w-64 border-r border-[rgba(217,222,234,0.9)] bg-[linear-gradient(180deg,#f7f4ec_0%,#eef6f7_52%,#f7f2eb_100%)] p-4 sm:block">
+        <div className="rounded-2xl border bg-[rgba(255,252,246,0.92)] px-4 py-3 shadow-soft backdrop-blur">
+          <div className="text-[29px] font-bold leading-[0.98] tracking-[-0.02em] text-slate-900">
             Dredging Fleet Operation Intelligence
           </div>
-          <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span>.</p>
-          <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
-          <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
-          <span className="mt-4 inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">Release 0.0 Demo</span>
+          <p className="mt-4 text-[19px] italic leading-[1.25] text-slate-800">See the fleet. Plan mobilization.</p>
+          <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[color:var(--brand-primary)] via-[color:var(--brand-secondary)] to-[color:var(--accent-orange)]" />
+          <span className="mt-4 inline-flex rounded-full border border-[rgba(20,131,138,0.18)] bg-[rgba(255,255,255,0.7)] px-3 py-1 text-xs font-medium text-slate-600">Release 0.0 Demo</span>
         </div>
         <NavItems pathname={pathname} />
         <p className="absolute bottom-4 w-[220px] text-[11px] text-slate-500">Built by Kolabs.Design <span className="text-[color:var(--accent-orange)]">•</span> AIM+HDA Collective</p>
@@ -74,20 +75,19 @@ export function Sidebar() {
       {open && (
         <div className="fixed inset-0 z-50 sm:hidden">
           <button className="absolute inset-0 bg-slate-900/30" onClick={() => setOpen(false)} aria-label="close navigation" />
-          <aside className="relative z-10 h-full w-72 border-r border-[#E5E7EB] bg-[#F7FAFD] p-4">
-            <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
+          <aside className="relative z-10 h-full w-72 border-r border-[rgba(217,222,234,0.9)] bg-[linear-gradient(180deg,#f7f4ec_0%,#eef6f7_52%,#f7f2eb_100%)] p-4">
+            <div className="rounded-2xl border bg-[rgba(255,252,246,0.94)] px-4 py-3 shadow-soft backdrop-blur">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-[22px] font-bold leading-[1.05] tracking-[-0.01em] text-slate-900">
+                  <div className="text-[27px] font-bold leading-[0.98] tracking-[-0.02em] text-slate-900">
                     Dredging Fleet Operation Intelligence
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Developed by <span className="text-[color:var(--brand-primary)]">Kolabs.Design</span>.</p>
-                  <p className="mt-3 text-[15px] leading-snug text-slate-800"><span className="font-serif italic">See the fleet.</span> Plan mobilization.</p>
+                  <p className="mt-4 text-[18px] italic leading-[1.25] text-slate-800">See the fleet. Plan mobilization.</p>
                 </div>
                 <button onClick={() => setOpen(false)} className="rounded-lg border p-1"><X className="h-4 w-4" /></button>
               </div>
-              <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[#1D498B] to-[#36787D]" />
-              <span className="mt-4 inline-flex rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">Release 0.0 Demo</span>
+              <div className="mt-4 h-[2px] w-[96%] rounded bg-gradient-to-r from-[color:var(--brand-primary)] via-[color:var(--brand-secondary)] to-[color:var(--accent-orange)]" />
+              <span className="mt-4 inline-flex rounded-full border border-[rgba(20,131,138,0.18)] bg-[rgba(255,255,255,0.7)] px-3 py-1 text-xs font-medium text-slate-600">Release 0.0 Demo</span>
             </div>
             <NavItems pathname={pathname} onNavigate={() => setOpen(false)} />
           </aside>

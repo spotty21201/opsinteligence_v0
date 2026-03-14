@@ -27,7 +27,16 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
     setLoadingId(projectId);
     try {
       const response = await fetch(`/api/reports/${projectId}`);
-      if (!response.ok) throw new Error('export failed');
+      if (!response.ok) {
+        let message = 'Failed to generate report';
+        try {
+          const payload = await response.json();
+          message = payload.message || message;
+        } catch {
+          // Fall back to a generic message when the response is not JSON.
+        }
+        throw new Error(message);
+      }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -37,8 +46,8 @@ export function ProjectsPageClient({ projects }: { projects: Project[] }) {
       URL.revokeObjectURL(url);
       window.dispatchEvent(new Event('ops-report-generated'));
       toast('Project report generated', 'success');
-    } catch {
-      toast('Failed to generate report', 'error');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Failed to generate report', 'error');
     } finally {
       setLoadingId(null);
     }

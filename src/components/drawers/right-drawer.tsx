@@ -88,14 +88,22 @@ export function RightDrawer({
   }
 
   return (
-    <aside className={cn('absolute right-0 top-0 z-30 h-full w-full border-l bg-white transition-transform duration-200 sm:w-[430px]', drawer.mode === 'closed' ? 'translate-x-full' : 'translate-x-0')}>
+    <aside
+      className={cn(
+        'absolute bottom-0 right-0 z-30 w-full border bg-white transition-transform duration-200 sm:top-0 sm:h-full sm:w-[430px] sm:rounded-none sm:border-l sm:border-t-0',
+        'rounded-t-2xl',
+        drawer.mode === 'closed'
+          ? 'translate-y-full sm:translate-x-full sm:translate-y-0'
+          : 'translate-y-0 sm:translate-x-0',
+      )}
+    >
       <div className="flex items-center justify-between border-b p-4">
         <p className="text-sm font-semibold">Context Drawer</p>
         <button className="rounded-md p-1 text-slate-500 hover:bg-slate-100" onClick={closeDrawer}><X className="h-4 w-4" /></button>
       </div>
 
       {asset && (
-        <div className="h-[calc(100%-57px)] overflow-y-auto p-4">
+        <div className="max-h-[58dvh] overflow-y-auto p-4 sm:h-[calc(100%-57px)] sm:max-h-none">
           <div className="mb-3 flex items-start justify-between gap-2">
             <div>
               <h2 className="text-lg font-semibold">{asset.name}</h2>
@@ -134,7 +142,7 @@ export function RightDrawer({
       )}
 
       {project && (
-        <div className="h-[calc(100%-57px)] overflow-y-auto p-4">
+        <div className="max-h-[58dvh] overflow-y-auto p-4 sm:h-[calc(100%-57px)] sm:max-h-none">
           <div className="mb-3 flex items-start justify-between gap-2">
             <div>
               <h2 className="text-lg font-semibold">{project.name}</h2>
@@ -151,7 +159,7 @@ export function RightDrawer({
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
             <TabsContent value="snapshot" className="mt-3 space-y-3">
-              <ProjectSnapshot project={project} logs={projectLogs} assignments={projectAssignments} compact />
+              <ProjectSnapshot project={project} logs={projectLogs} assignments={projectAssignments} assets={assets} compact />
               <div className="rounded-xl border p-3 text-sm">
                 <p className="font-medium">Recommended assets</p>
                 <div className="mt-2 space-y-2">

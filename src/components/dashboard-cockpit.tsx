@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useUiStore } from '@/store/ui-store';
 import { Asset, Assignment, DailyLog, Project, SpeedProfile } from '@/lib/types';
 import { useToast } from '@/components/ui/toast-provider';
+import { cn } from '@/lib/utils';
 
 const MapClient = dynamic(() => import('@/components/Map').then((mod) => mod.Map), {
   ssr: false,
@@ -58,6 +59,11 @@ export function DashboardCockpit({
   const [liveLogs, setLiveLogs] = useState(logs);
   const [liveAssignments, setLiveAssignments] = useState(assignments);
   const [exporting, setExporting] = useState(false);
+  const drawerOpen = drawer.mode !== 'closed';
+  const selectedProject = useMemo(
+    () => liveProjects.find((project) => project.id === selectedProjectId) ?? null,
+    [liveProjects, selectedProjectId],
+  );
 
   useEffect(() => {
     const q = searchParams.get('q') ?? '';
@@ -149,7 +155,16 @@ export function DashboardCockpit({
     setExporting(true);
     try {
       const response = await fetch(`/api/reports/${selectedProjectId}`);
-      if (!response.ok) throw new Error('Export failed');
+      if (!response.ok) {
+        let message = 'PDF export failed';
+        try {
+          const payload = await response.json();
+          message = payload.message || message;
+        } catch {
+          // Fall back to a generic message when the response is not JSON.
+        }
+        throw new Error(message);
+      }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -160,8 +175,8 @@ export function DashboardCockpit({
       window.open(`/report/${selectedProjectId}?print=1`, '_blank');
       window.dispatchEvent(new Event('ops-report-generated'));
       toast('PDF exported', 'success');
-    } catch {
-      toast('PDF export failed', 'error');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'PDF export failed', 'error');
     } finally {
       setExporting(false);
     }
@@ -182,44 +197,69 @@ export function DashboardCockpit({
   ];
 
   return (
-    <div className="relative flex h-[100dvh] flex-col overflow-hidden rounded-2xl border bg-white sm:block sm:h-[calc(100vh-2rem)]">
-      <div className="z-20 shrink-0 px-3 pt-3 sm:absolute sm:left-4 sm:right-[450px] sm:top-3 sm:px-0 sm:pt-0">
-        <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl">National Operations Map</h1>
-        <p className="text-sm text-slate-500 sm:text-base">Assets and projects across Indonesia.</p>
-        <div className="mt-2 sm:mt-2">
-          <TopBar
-            filters={filters}
-            search={search}
-            onSearch={setSearch}
-            onFilter={(key, value) => setFilters((curr) => ({ ...curr, [key]: value }))}
-            onExport={exportSelectedProject}
-            exporting={exporting}
-            exportDisabled={!selectedProjectId}
-            counts={{ assets: filtered.assets.length, projects: filtered.projects.length }}
-          />
-        </div>
-        <div className="mt-4 flex items-center justify-between px-1">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Today&apos;s snapshot</p>
-          <p className="hidden text-[11px] text-slate-500 sm:block">Tip: Click a marker to view details and dispatch.</p>
-        </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {kpis.map((item) => (
-            <div key={item.label} className="rounded-xl border bg-[color:var(--brand-soft)]/70 p-3 shadow-soft transition-colors hover:bg-[color:var(--brand-soft)] sm:p-4">
-              <div className="flex items-start justify-between">
-                <p className="text-[12px] text-slate-500">{item.label}</p>
-                <item.icon className="h-4 w-4 text-[color:var(--brand-primary)]" />
-              </div>
-              <p className="text-3xl font-semibold leading-tight text-slate-900">{item.value}</p>
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden rounded-2xl border border-[rgba(23,58,103,0.12)] bg-[linear-gradient(180deg,rgba(255,251,245,0.96)_0%,rgba(236,245,247,0.9)_100%)] sm:block sm:h-[calc(100vh-2rem)]">
+      <div
+        className={cn(
+          'z-20 shrink-0 px-3 pt-3 sm:absolute sm:left-4 sm:top-2 sm:px-0 sm:pt-0',
+          drawerOpen ? 'sm:right-[450px]' : 'sm:right-2',
+        )}
+      >
+        <div className="sm:flex sm:items-start sm:justify-between sm:gap-4">
+          <div className="sm:max-w-md">
+            <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl">National Operations Map</h1>
+            <p className="text-sm text-slate-500 sm:text-base">Assets and projects across Indonesia.</p>
+          </div>
+
+          <div className="mt-3 sm:mt-0 sm:w-full sm:max-w-[35rem]">
+            <TopBar
+              filters={filters}
+              search={search}
+              onSearch={setSearch}
+              onFilter={(key, value) => setFilters((curr) => ({ ...curr, [key]: value }))}
+              onExport={exportSelectedProject}
+              exporting={exporting}
+              exportDisabled={!selectedProjectId}
+              selectedProjectName={selectedProject?.name ?? null}
+              onClearSelection={() => {
+                setSelectedProjectId(null);
+                if (drawer.mode === 'project') {
+                  setDrawer({ mode: 'closed', selectedId: null });
+                }
+              }}
+              counts={{ assets: filtered.assets.length, projects: filtered.projects.length }}
+            />
+
+            <div className="mt-2 flex items-center justify-between px-1">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Today&apos;s snapshot</p>
+              <p className="hidden text-[11px] text-slate-500 sm:block">Tip: Click a marker to view details and dispatch.</p>
             </div>
-          ))}
+            <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {kpis.map((item) => (
+                <div key={item.label} className="rounded-xl border border-[rgba(20,131,138,0.18)] bg-[linear-gradient(180deg,rgba(234,243,245,0.8)_0%,rgba(255,248,243,0.74)_100%)] px-3 py-2.5 shadow-soft transition-colors hover:bg-[linear-gradient(180deg,rgba(228,237,242,0.95)_0%,rgba(255,246,239,0.88)_100%)] sm:px-3 sm:py-2">
+                  <div className="flex items-start justify-between">
+                    <p className="text-[11px] text-slate-500">{item.label}</p>
+                    <item.icon className="h-3.5 w-3.5 text-[color:var(--brand-primary)]" />
+                  </div>
+                  <p className="mt-1 text-[1.7rem] font-semibold leading-none text-slate-900 sm:text-[1.55rem]">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="relative flex-1 min-h-[420px] w-full shadow-[inset_0_0_0_1px_rgba(29,73,139,0.06),inset_0_12px_28px_rgba(2,6,23,0.06)] sm:h-full sm:pr-[430px]">
+      <div
+        className={cn(
+          'relative flex-1 min-h-[420px] w-full shadow-[inset_0_0_0_1px_rgba(29,73,139,0.06),inset_0_12px_28px_rgba(2,6,23,0.06)] sm:h-full',
+          drawerOpen ? 'sm:pr-[430px]' : 'sm:pr-0',
+        )}
+      >
         <ErrorBoundary fallbackTitle="Map not supported in this environment" fallbackDescription="Map view is unavailable on this browser/device. You can still use tables and reports.">
           <MapClient
             assets={filtered.assets}
             projects={filtered.projects}
+            selectedAssetId={drawer.mode === 'asset' ? drawer.selectedId : null}
+            selectedProjectId={selectedProjectId}
             onSelectAsset={(id) => setDrawer({ mode: 'asset', selectedId: id })}
             onSelectProject={(id) => {
               setSelectedProjectId(id);
@@ -230,8 +270,10 @@ export function DashboardCockpit({
       </div>
 
       {noResults && (
-        <div className="absolute inset-x-3 top-[470px] z-20 rounded-xl border bg-white/95 p-3 text-sm text-slate-600 shadow-soft sm:inset-x-8 sm:top-[296px]">
-          No map results found for current search and filters.
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6">
+          <div className="rounded-xl border bg-white/95 p-3 text-center text-sm text-slate-600 shadow-soft">
+            No map results found for current search and filters.
+          </div>
         </div>
       )}
 
