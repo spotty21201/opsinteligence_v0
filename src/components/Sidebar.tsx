@@ -61,7 +61,7 @@ export function Sidebar() {
 
       <aside className="hidden h-screen w-64 border-r border-[rgba(217,222,234,0.9)] bg-[linear-gradient(180deg,#f7f4ec_0%,#eef6f7_52%,#f7f2eb_100%)] p-4 sm:block">
         <div className="rounded-2xl border bg-[rgba(255,252,246,0.92)] px-4 py-3 shadow-soft backdrop-blur">
-          <div className="text-[29px] font-bold leading-[0.98] tracking-[-0.02em] text-slate-900">
+          <div className="text-[29px] font-bold leading-[0.98] tracking-[-0.02em] text-[#1677FF]">
             Dredging Fleet Operation Intelligence
           </div>
           <p className="mt-4 text-[19px] italic leading-[1.25] text-slate-800">See the fleet. Plan mobilization.</p>
@@ -79,7 +79,7 @@ export function Sidebar() {
             <div className="rounded-2xl border bg-[rgba(255,252,246,0.94)] px-4 py-3 shadow-soft backdrop-blur">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-[27px] font-bold leading-[0.98] tracking-[-0.02em] text-slate-900">
+                  <div className="text-[27px] font-bold leading-[0.98] tracking-[-0.02em] text-[#1677FF]">
                     Dredging Fleet Operation Intelligence
                   </div>
                   <p className="mt-4 text-[18px] italic leading-[1.25] text-slate-800">See the fleet. Plan mobilization.</p>
